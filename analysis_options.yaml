@@ -1,0 +1,41 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.mocks.dart"
+
+linter:
+  rules:
+    # Style
+    always_declare_return_types: true
+    always_use_package_imports: true
+    prefer_single_quotes: true
+    require_trailing_commas: true
+    sort_constructors_first: true
+    sort_pub_dependencies: false
+
+    # Safety
+    avoid_print: true
+    avoid_unnecessary_containers: true
+    cancel_subscriptions: true
+    close_sinks: true
+
+    # Best practices
+    directives_ordering: true
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    unnecessary_lambdas: true
+    unnecessary_parenthesis: true
+    use_super_parameters: true
+    use_key_in_widget_constructors: true
+
+    # Documentation
+    public_member_api_docs: false
+
+    # Optional (enable if desired)
+    omit_local_variable_types: false

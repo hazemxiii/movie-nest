@@ -1,0 +1,59 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:movie_nest/core/theme/theme_notifier.dart';
+
+class NestButton extends ConsumerStatefulWidget {
+  const NestButton({
+    super.key,
+    this.text,
+    this.icon,
+    required this.onTap,
+    this.backC,
+    this.textC,
+    this.borderC,
+  });
+  final String? text;
+  final IconData? icon;
+  final Color? backC;
+  final Color? textC;
+  final Color? borderC;
+  final VoidCallback onTap;
+
+  @override
+  ConsumerState<NestButton> createState() => _NestButtonState();
+}
+
+class _NestButtonState extends ConsumerState<NestButton> {
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider).value!;
+    return InkWell(
+      onTap: widget.onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: widget.backC ?? theme.textC,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: widget.borderC ?? Colors.transparent),
+        ),
+        child: Row(
+          spacing: 8,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.icon != null)
+              Icon(widget.icon, color: widget.textC ?? theme.backC),
+            if (widget.text != null)
+              Text(
+                widget.text!,
+                style: TextStyle(
+                  color: widget.textC ?? theme.backC,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
