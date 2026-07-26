@@ -6,6 +6,7 @@ abstract class NestTheme {
     required this.textC,
     required this.mainC,
     required this.secBackC,
+    required this.inputBackC,
     required this.secTextC,
     required this.borderC,
     required this.errorC,
@@ -14,6 +15,7 @@ abstract class NestTheme {
   final Color mainC;
   final Color backC;
   final Color secBackC;
+  final Color inputBackC;
   final Color textC;
   final Color secTextC;
   final Color borderC;
@@ -28,6 +30,8 @@ abstract class NestTheme {
       TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textC);
   TextStyle get largeBold =>
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: textC);
+  TextStyle get largeBoldMain =>
+      TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: mainC);
   TextStyle get sec => TextStyle(color: secTextC);
   TextStyle get secStrikeBold => TextStyle(
     color: secTextC,
@@ -41,4 +45,5 @@ abstract class NestTheme {
   TextStyle get bigErrorBold =>
       TextStyle(fontSize: 20, color: errorC, fontWeight: FontWeight.bold);
   TextStyle get normal => TextStyle(color: textC);
+  TextStyle get error => TextStyle(color: errorC);
 }

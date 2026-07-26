@@ -11,9 +11,8 @@ import 'package:movie_nest/core/widgets/nest_image.dart';
 import 'package:movie_nest/features/media/data/models/media.dart';
 
 class MediaWidget extends ConsumerStatefulWidget {
-  const MediaWidget({super.key, required this.media, required this.isPublic});
+  const MediaWidget({super.key, required this.media});
   final Media media;
-  final bool isPublic;
 
   @override
   ConsumerState<MediaWidget> createState() => _MediaWidgetState();
@@ -150,10 +149,6 @@ class _MediaWidgetState extends ConsumerState<MediaWidget>
   }
 
   void goToDetails(String id, bool isTv) {
-    if (widget.isPublic) {
-      context.push('/media/public/$id', extra: isTv);
-    } else {
-      // TODO: Navigate to private media details
-    }
+    context.push('/media/public/$id', extra: isTv);
   }
 }

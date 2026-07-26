@@ -5,7 +5,9 @@ class NestLogger {
     debugPrint('[NEST] $message\n');
   }
 
-  static void logError(String message, {String? code}) {
-    debugPrint('[NEST ERROR] ${code != null ? '$code: ' : ''}$message\n');
+  static void logError(dynamic object, {String? code}) {
+    debugPrint(
+      '[NEST ERROR] ${code != null ? '$code: ' : ''}${object.toString()}\n',
+    );
   }
 }

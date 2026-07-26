@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:movie_nest/features/nest_list/presentation/ui/public_nest_list_loader.dart';
-import 'package:movie_nest/features/nest_list/presentation/ui/search_widget.dart';
+import 'package:movie_nest/features/nest_list/presentation/ui/discover_page/public_nest_list_loader.dart';
+import 'package:movie_nest/features/nest_list/presentation/ui/discover_page/search_widget.dart';
 
 class DiscoverPage extends ConsumerWidget {
   const DiscoverPage({super.key});

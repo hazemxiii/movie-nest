@@ -49,7 +49,7 @@ class Media {
     try {
       json = Map<String, dynamic>.from(json);
       return Media(
-        id: json['_id'] as String,
+        id: (json['_id'] ?? json['id']) as String,
         list: json['list'] as String,
         tmdbId: json['tmdb_id'] as String,
         title: json['title'] as String,
@@ -104,7 +104,7 @@ class Media {
 
   Map<String, dynamic> toJson() {
     return {
-      '_id': id,
+      'id': id,
       'list': list,
       'tmdb_id': tmdbId,
       'title': title,

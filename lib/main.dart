@@ -2,9 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:movie_nest/core/services/sqlite_service.dart';
+import 'package:movie_nest/core/services/toast_service.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
+import 'package:movie_nest/core/widgets/nest_button.dart';
 import 'package:movie_nest/features/media/presentation/ui/media_page.dart';
-import 'package:movie_nest/features/nest_list/presentation/ui/discover_page.dart';
+import 'package:movie_nest/features/nest_list/presentation/ui/add_nest_list_dialog.dart';
+import 'package:movie_nest/features/nest_list/presentation/ui/discover_page/discover_page.dart';
+import 'package:movie_nest/features/nest_list/presentation/ui/private_list_collection_page/private_list_collection_page.dart';
+import 'package:movie_nest/features/nest_list/presentation/viewmodels/private_nest_list_collection_viewmodel.dart';
+import 'package:movie_nest/features/sync/presentation/ui/sync_indicator_button.dart';
 
 void main() {
   runApp(const ProviderScope(child: Bootstrap()));
@@ -22,12 +28,63 @@ class _BootstrapState extends ConsumerState<Bootstrap> {
   Future<void> _loadApp() async {
     await ref.watch(themeProvider.future);
     await ref.read(sqliteServiceProvider).init();
+    final theme = ref.watch(themeProvider).value!;
     router = GoRouter(
       routes: [
         ShellRoute(
           builder: (context, state, child) {
             return Scaffold(
-              backgroundColor: ref.watch(themeProvider).value!.backC,
+              backgroundColor: theme.backC,
+              appBar: AppBar(
+                backgroundColor: theme.backC,
+                actions: [
+                  const SyncIndicatorButton(),
+                  TextButton(
+                    style: TextButton.styleFrom(foregroundColor: theme.mainC),
+                    onPressed: () {
+                      if (state.fullPath == '/lists') {
+                        context.push('/');
+                      } else {
+                        context.push('/lists');
+                      }
+                    },
+                    child: Text(state.fullPath == '/lists' ? 'Home' : 'Lists'),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(right: 16),
+                    child: NestButton(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AddNestListDialog(
+                            onCreated: (nestListDto) async {
+                              try {
+                                await ref
+                                    .read(
+                                      privateNestListCollectionViewmodelProvider
+                                          .notifier,
+                                    )
+                                    .addList(nestListDto);
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                ToastService.error(
+                                  context,
+                                  theme,
+                                  title: 'Error',
+                                  message: e.toString(),
+                                );
+                              }
+                            },
+                          ),
+                        );
+                      },
+                      text: 'New List',
+                      backC: theme.mainC,
+                      textC: theme.backC,
+                    ),
+                  ),
+                ],
+              ),
               body: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.only(
@@ -52,6 +109,12 @@ class _BootstrapState extends ConsumerState<Bootstrap> {
               name: 'home',
               pageBuilder: (context, state) =>
                   const NoTransitionPage(child: DiscoverPage()),
+            ),
+            GoRoute(
+              path: '/lists',
+              name: 'lists',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: PrivateListCollectionPage()),
             ),
             GoRoute(
               path: '/media/public/:mediaId',

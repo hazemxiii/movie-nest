@@ -11,12 +11,14 @@ class NestButton extends ConsumerStatefulWidget {
     this.backC,
     this.textC,
     this.borderC,
+    this.radius = 999,
   });
   final String? text;
   final IconData? icon;
   final Color? backC;
   final Color? textC;
   final Color? borderC;
+  final double radius;
   final VoidCallback onTap;
 
   @override
@@ -29,12 +31,12 @@ class _NestButtonState extends ConsumerState<NestButton> {
     final theme = ref.watch(themeProvider).value!;
     return InkWell(
       onTap: widget.onTap,
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: BorderRadius.circular(widget.radius),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: widget.backC ?? theme.textC,
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(widget.radius),
           border: Border.all(color: widget.borderC ?? Colors.transparent),
         ),
         child: Row(

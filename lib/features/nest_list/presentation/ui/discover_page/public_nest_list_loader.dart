@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:movie_nest/features/nest_list/presentation/ui/list_carousel_widget.dart';
-import 'package:movie_nest/features/nest_list/presentation/ui/nest_list_error_widget.dart';
+import 'package:movie_nest/features/nest_list/presentation/ui/discover_page/list_carousel_widget.dart';
+import 'package:movie_nest/features/nest_list/presentation/ui/discover_page/nest_list_error_widget.dart';
 import 'package:movie_nest/features/nest_list/presentation/viewmodels/public_list_viewmodel.dart';
 
 class PublicNestListLoader extends ConsumerWidget {
@@ -22,11 +22,7 @@ class PublicNestListLoader extends ConsumerWidget {
         if (data.error != null) {
           return Center(child: NestListErrorWidget(message: data.error!));
         }
-        return ListCarouselWidget(
-          list: data.data!,
-          description: description,
-          isPublic: true,
-        );
+        return ListCarouselWidget(list: data.data!, description: description);
       },
       loading: ListCarouselWidget.shimmer,
       error: (error, stackTrace) {

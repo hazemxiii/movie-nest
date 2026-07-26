@@ -1,6 +1,7 @@
 import 'package:movie_nest/core/exceptions/nest_secret_exception.dart';
 import 'package:movie_nest/core/services/nest_logger.dart';
 import 'package:movie_nest/features/media/data/models/media.dart';
+import 'package:movie_nest/features/nest_list/data/models/nest_list_dto.dart';
 
 class NestList {
   NestList({
@@ -15,7 +16,7 @@ class NestList {
     try {
       json = Map<String, dynamic>.from(json);
       return NestList(
-        id: json['_id'] as String,
+        id: (json['_id'] ?? json['id']) as String,
         name: json['name'] as String,
         date: json['date'] != null
             ? DateTime.parse(json['date'] as String)
@@ -38,11 +39,20 @@ class NestList {
 
   Map<String, dynamic> toJson() {
     return {
-      '_id': id,
+      'id': id,
       'name': name,
       'date': date?.toIso8601String(),
       'fieldsVersion': fieldsVersion,
     };
+  }
+
+  NestListDto toDto() {
+    return NestListDto(
+      id: id,
+      name: name,
+      date: date,
+      fieldsVersion: fieldsVersion,
+    );
   }
 
   NestList copyWith({

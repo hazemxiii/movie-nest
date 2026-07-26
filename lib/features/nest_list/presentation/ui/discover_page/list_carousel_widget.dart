@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
 import 'package:movie_nest/features/nest_list/data/models/nest_list.dart';
-import 'package:movie_nest/features/nest_list/presentation/ui/media_widget.dart';
-import 'package:movie_nest/features/nest_list/presentation/ui/media_widget_shimmer.dart';
+import 'package:movie_nest/features/nest_list/presentation/ui/discover_page/media_widget.dart';
+import 'package:movie_nest/features/nest_list/presentation/ui/discover_page/media_widget_shimmer.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ListCarouselWidget extends ConsumerWidget {
@@ -12,18 +12,15 @@ class ListCarouselWidget extends ConsumerWidget {
     required this.list,
     this.description,
     this.isShimmer = false,
-    required this.isPublic,
   });
   ListCarouselWidget.shimmer({super.key})
     : list = NestList(name: '', media: [], id: '', fieldsVersion: {}),
       description = null,
-      isShimmer = true,
-      isPublic = false;
+      isShimmer = true;
 
   final NestList list;
   final String? description;
   final bool isShimmer;
-  final bool isPublic;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,10 +77,7 @@ class ListCarouselWidget extends ConsumerWidget {
                   margin: const EdgeInsets.only(right: 16),
                   child: isShimmer
                       ? const MediaWidgetShimmer()
-                      : MediaWidget(
-                          media: list.media[index],
-                          isPublic: isPublic,
-                        ),
+                      : MediaWidget(media: list.media[index]),
                 );
               },
             ),

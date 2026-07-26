@@ -10,8 +10,9 @@ class RemoteMediaDatasource extends MediaDatasource {
   final ApiService _apiService;
   @override
   Future<Media> getPublicMedia(String tmdbId, bool isTv) async {
-    final response = await _apiService.get(
+    final response = await _apiService.fetch(
       "media/public/$tmdbId?type=${isTv ? 'tv' : 'movie'}",
+      ApiMethod.get,
     );
     final seasons = (response['seasons'] as List? ?? [])
         .map(Season.fromJson)
