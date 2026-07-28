@@ -55,6 +55,16 @@ class NestList {
     );
   }
 
+  NestList updateWith(NestListDto dto) {
+    return NestList(
+      id: dto.id,
+      name: dto.name ?? name,
+      date: dto.date,
+      media: media,
+      fieldsVersion: dto.fieldsVersion,
+    );
+  }
+
   NestList copyWith({
     String? id,
     String? name,

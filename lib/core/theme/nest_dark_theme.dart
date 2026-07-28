@@ -13,5 +13,6 @@ class NestDarkTheme extends NestTheme {
         borderC: const Color(0xFF2F2F32),
         errorC: const Color(0xFFFF2F3A),
         innerBorderC: const Color(0xFF1A1A1E),
+        secBackC2: const Color(0xFF0F0F14),
       );
 }

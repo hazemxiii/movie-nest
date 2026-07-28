@@ -1,19 +1,8 @@
 import 'package:movie_nest/core/exceptions/nest_secret_exception.dart';
 import 'package:movie_nest/core/services/nest_logger.dart';
+import 'package:movie_nest/features/media/data/models/dtos/season_dto.dart';
 
 class Season {
-  Season({
-    required this.number,
-    required this.episodeCount,
-    this.name,
-    required this.watchedEpisodes,
-    this.description,
-    this.posterUrl,
-    required this.media,
-    this.fieldVersions,
-    this.version = 1,
-  });
-
   factory Season.fromJson(dynamic json) {
     try {
       json = Map<String, dynamic>.from(json);
@@ -29,7 +18,7 @@ class Season {
                 ?.map((e) => e as int)
                 .toList() ??
             [],
-        fieldVersions: (json['fieldVersions'] as Map<String, dynamic>?)?.map(
+        fieldsVersion: (json['fieldsVersion'] as Map<String, dynamic>?)?.map(
           (key, value) => MapEntry(key, value as int),
         ),
         version: json['version'] as int? ?? 1,
@@ -40,6 +29,33 @@ class Season {
       throw error;
     }
   }
+  Season({
+    required this.number,
+    required this.episodeCount,
+    this.name,
+    required this.watchedEpisodes,
+    this.description,
+    this.posterUrl,
+    required this.media,
+    this.fieldsVersion,
+    this.version = 1,
+  });
+
+  Season copyWithDto(SeasonDto dto) {
+    final updatedWatchedEpisodes = {...watchedEpisodes};
+    updatedWatchedEpisodes.addAll(dto.addedWatchedEpisodes);
+    updatedWatchedEpisodes.removeAll(dto.removedWatchedEpisodes);
+    return Season(
+      number: dto.number,
+      episodeCount: dto.episodeCount ?? episodeCount,
+      name: dto.name,
+      description: dto.description,
+      posterUrl: dto.posterUrl,
+      media: dto.media ?? media,
+      fieldsVersion: dto.fieldsVersion,
+      watchedEpisodes: updatedWatchedEpisodes.toList(),
+    );
+  }
 
   final int number;
   final int episodeCount;
@@ -48,7 +64,7 @@ class Season {
   final String? description;
   final String? posterUrl;
   final String media;
-  final Map<String, int>? fieldVersions;
+  final Map<String, int>? fieldsVersion;
   final int version;
 
   Map<String, dynamic> toJson() {
@@ -59,9 +75,21 @@ class Season {
       'description': description,
       'poster_url': posterUrl,
       'media': media,
-      'fieldVersions': fieldVersions,
+      'fieldsVersion': fieldsVersion,
       'version': version,
     };
+  }
+
+  SeasonDto toDto() {
+    return SeasonDto(
+      number: number,
+      episodeCount: episodeCount,
+      name: name,
+      description: description,
+      posterUrl: posterUrl,
+      media: media,
+      fieldsVersion: fieldsVersion ?? {},
+    );
   }
 
   Season copyWith({
@@ -71,7 +99,7 @@ class Season {
     String? description,
     String? posterUrl,
     String? media,
-    Map<String, int>? fieldVersions,
+    Map<String, int>? fieldsVersion,
     int? version,
     List<int>? watchedEpisodes,
   }) {
@@ -82,7 +110,7 @@ class Season {
       description: description ?? this.description,
       posterUrl: posterUrl ?? this.posterUrl,
       media: media ?? this.media,
-      fieldVersions: fieldVersions ?? this.fieldVersions,
+      fieldsVersion: fieldsVersion ?? this.fieldsVersion,
       version: version ?? this.version,
       watchedEpisodes: watchedEpisodes ?? this.watchedEpisodes,
     );

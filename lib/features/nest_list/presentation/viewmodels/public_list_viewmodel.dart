@@ -11,8 +11,16 @@ class PublicListViewmodel extends StreamNotifier<WatchStreamData<NestList>> {
 
   @override
   Stream<WatchStreamData<NestList>> build() async* {
-    final watchPublicList = ref.read(watchPublicListProvider)(listId);
-    yield* watchPublicList;
+    try {
+      final watchPublicList = ref.read(watchPublicListProvider)(listId);
+      yield* watchPublicList;
+    } catch (e) {
+      yield WatchStreamData<NestList>(
+        data: null,
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
   }
 }
 

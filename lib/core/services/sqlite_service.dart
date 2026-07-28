@@ -13,6 +13,14 @@ class SqliteService {
   late final Database _database;
 
   final String nestListTable = 'nest_lists';
+  final String mediaTable = 'media';
+  final String seasonsTable = 'seasons';
+
+  final Map<String, List<String>> encodedFields = {
+    'nest_lists': ['fieldsVersion'],
+    'media': ['genres', 'fieldsVersion'],
+    'seasons': ['fieldsVersion', 'watched_episodes'],
+  };
 
   Future<void> init() async {
     final databaseFactory = databaseFactoryFfi;
@@ -46,12 +54,54 @@ class SqliteService {
     createdAt TEXT NOT NULL
 );
   ''');
+    await _database.execute('''
+    CREATE TABLE IF NOT EXISTS media (
+    id TEXT PRIMARY KEY,
+    listId TEXT NOT NULL,
+    tmdb_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    original_title TEXT,
+    description TEXT NOT NULL,
+    poster_url TEXT NOT NULL,
+    type TEXT NOT NULL,
+    date TEXT NOT NULL,
+    end TEXT,
+    rating REAL NOT NULL DEFAULT 0,
+    run_time INTEGER NOT NULL,
+    genres TEXT DEFAULT '[]',
+    episode_count INTEGER,
+    season_count INTEGER,
+    status TEXT NOT NULL,
+    tag TEXT NOT NULL,
+    fieldsVersion TEXT DEFAULT '{}'
+);
+''');
+    await _database.execute('''
+  CREATE TABLE IF NOT EXISTS seasons (
+    id TEXT PRIMARY KEY,
+    media TEXT NOT NULL,
+    number INTEGER NOT NULL,
+    episode_count INTEGER NOT NULL,
+    name TEXT,
+    description TEXT,
+    poster_url TEXT,
+    watched_episodes TEXT DEFAULT '[]',
+    fieldsVersion TEXT DEFAULT '{}'
+);
+''');
   }
 
-  Future<void> insert(String table, Map<String, dynamic> values) async {
+  Future<void> insert(
+    String table,
+    Map<String, dynamic> values, {
+    List<String> encodeFields = const [],
+  }) async {
+    final encode = encodedFields[table] ?? [];
     try {
-      if (values.containsKey('fieldsVersion')) {
-        values['fieldsVersion'] = jsonEncode(values['fieldsVersion']);
+      for (final field in encode) {
+        if (values.containsKey(field)) {
+          values[field] = jsonEncode(values[field]);
+        }
       }
       NestLogger.log('Inserting into $table: $values');
       await _database.insert(table, values);
@@ -66,10 +116,14 @@ class SqliteService {
     Map<String, dynamic> values, {
     String? where,
     List<dynamic>? whereArgs,
+    List<String> encodeFields = const [],
   }) async {
     try {
-      if (values.containsKey('fieldsVersion')) {
-        values['fieldsVersion'] = jsonEncode(values['fieldsVersion']);
+      final encode = encodedFields[table] ?? [];
+      for (final field in encode) {
+        if (values.containsKey(field)) {
+          values[field] = jsonEncode(values[field]);
+        }
       }
       NestLogger.log(
         'Updating $table with values: $values where: $where whereArgs: $whereArgs',
@@ -111,8 +165,10 @@ class SqliteService {
     String table, {
     String? where,
     List<dynamic>? whereArgs,
+    List<String> decodeFields = const [],
   }) async {
     try {
+      final decode = encodedFields[table] ?? [];
       NestLogger.log('Querying $table where: $where whereArgs: $whereArgs');
       final query = await _database.query(
         table,
@@ -121,7 +177,11 @@ class SqliteService {
       );
       return query.map((e) {
         final out = Map<String, dynamic>.from(e);
-        out['fieldsVersion'] = jsonDecode(e['fieldsVersion'].toString());
+        for (final field in decode) {
+          if (out.containsKey(field)) {
+            out[field] = jsonDecode(out[field].toString());
+          }
+        }
         return out;
       }).toList();
     } catch (e) {

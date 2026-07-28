@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:movie_nest/core/services/api_service.dart';
 import 'package:movie_nest/features/media/data/models/media.dart';
+import 'package:movie_nest/features/media/data/models/season.dart';
 import 'package:movie_nest/features/nest_list/data/datasources/nest_list_datasource.dart';
 import 'package:movie_nest/features/nest_list/data/models/nest_list.dart';
 import 'package:movie_nest/features/nest_list/data/models/nest_list_dto.dart';
@@ -51,6 +52,20 @@ class RemoteNestListDatasource implements NestListDatasource {
       requestBody: list.toUpdateJson(),
     );
     return NestList.fromJson(response);
+  }
+
+  @override
+  Future<NestList> getPrivateNestList(String listId) async {
+    final response = await _apiService.fetch('lists/$listId', ApiMethod.get);
+    final media = <Media>[];
+    for (var item in response['media']) {
+      final seasons = <Season>[];
+      for (var season in item['seasons']) {
+        seasons.add(Season.fromJson(season));
+      }
+      media.add(Media.fromJson(item).copyWith(seasons: seasons));
+    }
+    return NestList.fromJson(response).copyWith(media: media);
   }
 }
 

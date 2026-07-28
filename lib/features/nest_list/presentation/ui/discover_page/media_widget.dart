@@ -48,6 +48,10 @@ class _MediaWidgetState extends ConsumerState<MediaWidget>
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider).value!;
     return InkWell(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
       onTap: () {
         goToDetails(widget.media.tmdbId, widget.media.type == 'tv');
       },

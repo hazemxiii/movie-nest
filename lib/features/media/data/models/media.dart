@@ -1,5 +1,6 @@
 import 'package:movie_nest/core/exceptions/nest_secret_exception.dart';
 import 'package:movie_nest/core/services/nest_logger.dart';
+import 'package:movie_nest/features/media/data/models/dtos/media_dto.dart';
 import 'package:movie_nest/features/media/data/models/season.dart';
 
 class Media {
@@ -21,7 +22,7 @@ class Media {
     this.seasonCount,
     required this.status,
     required this.tag,
-    this.fieldVersions,
+    this.fieldsVersion,
     this.version = 1,
     required this.seasons,
   });
@@ -50,7 +51,7 @@ class Media {
       json = Map<String, dynamic>.from(json);
       return Media(
         id: (json['_id'] ?? json['id']) as String,
-        list: json['list'] as String,
+        list: (json['list'] ?? json['listId']) as String,
         tmdbId: json['tmdb_id'] as String,
         title: json['title'] as String,
         originalTitle: json['original_title'] as String?,
@@ -68,8 +69,8 @@ class Media {
         seasonCount: json['season_count'] as int?,
         status: json['status'] as String,
         tag: json['tag'] as String,
-        fieldVersions: json['fieldVersions'] != null
-            ? Map<String, num>.from(json['fieldVersions'] as Map)
+        fieldsVersion: json['fieldsVersion'] != null
+            ? Map<String, num>.from(json['fieldsVersion'] as Map)
             : null,
         version: json['version'] ?? 1,
         seasons: [],
@@ -99,7 +100,7 @@ class Media {
   final String status;
   final String tag;
   final List<Season> seasons;
-  final Map<String, num>? fieldVersions;
+  final Map<String, num>? fieldsVersion;
   final int version;
 
   Map<String, dynamic> toJson() {
@@ -121,7 +122,7 @@ class Media {
       'season_count': seasonCount,
       'status': status,
       'tag': tag,
-      'fieldVersions': fieldVersions,
+      'fieldsVersion': fieldsVersion,
       'version': version,
     };
   }
@@ -145,7 +146,7 @@ class Media {
     String? status,
     String? tag,
     List<Season>? seasons,
-    Map<String, num>? fieldVersions,
+    Map<String, num>? fieldsVersion,
     int? version,
   }) {
     return Media(
@@ -166,9 +167,67 @@ class Media {
       seasonCount: seasonCount ?? this.seasonCount,
       status: status ?? this.status,
       tag: tag ?? this.tag,
-      fieldVersions: fieldVersions ?? this.fieldVersions,
+      fieldsVersion: fieldsVersion ?? this.fieldsVersion,
       version: version ?? this.version,
       seasons: seasons ?? this.seasons,
+    );
+  }
+
+  Media copyWithDto(MediaDto dto) {
+    return Media(
+      id: dto.id,
+      list: dto.list ?? list,
+      tmdbId: dto.tmdbId ?? tmdbId,
+      title: dto.title ?? title,
+      originalTitle: dto.originalTitle ?? originalTitle,
+      description: dto.description ?? description,
+      posterUrl: dto.posterUrl ?? posterUrl,
+      type: dto.type ?? type,
+      date: dto.date ?? date,
+      end: dto.end ?? end,
+      rating: dto.rating ?? rating,
+      runTime: dto.runTime ?? runTime,
+      genres: dto.genres ?? genres,
+      episodeCount: dto.episodeCount,
+      seasonCount: dto.seasonCount,
+      status: dto.status ?? status,
+      tag: dto.tag ?? tag,
+      fieldsVersion: dto.fieldsVersion,
+      version: version,
+      seasons: dto.seasonsDto
+          .map(
+            (season) => Season(
+              number: 0,
+              episodeCount: 0,
+              watchedEpisodes: [0],
+              media: id,
+            ).copyWithDto(season),
+          )
+          .toList(),
+    );
+  }
+
+  MediaDto toDto() {
+    return MediaDto(
+      id: id,
+      list: list,
+      tmdbId: tmdbId,
+      title: title,
+      originalTitle: _originalTitle,
+      description: description,
+      posterUrl: posterUrl,
+      type: type,
+      date: date,
+      end: end,
+      rating: rating,
+      runTime: runTime,
+      genres: genres,
+      episodeCount: episodeCount,
+      seasonCount: seasonCount,
+      status: status,
+      tag: tag,
+      seasonsDto: seasons.map((s) => s.toDto()).toList(),
+      fieldsVersion: fieldsVersion ?? {},
     );
   }
 

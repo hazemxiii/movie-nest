@@ -19,12 +19,13 @@ class _AddNestListDialogState extends ConsumerState<AddNestListDialog> {
   late final TextEditingController _nameController;
 
   bool get _isEdit => widget.nestList != null;
-  final dto = NestListDto();
+  late final NestListDto dto;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    dto = NestListDto(fieldsVersion: widget.nestList?.fieldsVersion);
     _nameController = TextEditingController(text: widget.nestList?.name);
   }
 

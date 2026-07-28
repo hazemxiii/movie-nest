@@ -7,4 +7,5 @@ abstract class NestListDatasource {
   Future<void> delete(String listId);
   Future<NestList> getPublicNestList(String listId);
   Future<List<NestList>> getPrivateListCollectionSummary();
+  Future<NestList> getPrivateNestList(String listId);
 }

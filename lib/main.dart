@@ -5,9 +5,11 @@ import 'package:movie_nest/core/services/sqlite_service.dart';
 import 'package:movie_nest/core/services/toast_service.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
 import 'package:movie_nest/core/widgets/nest_button.dart';
+import 'package:movie_nest/core/widgets/splash_screen.dart';
 import 'package:movie_nest/features/media/presentation/ui/media_page.dart';
 import 'package:movie_nest/features/nest_list/presentation/ui/add_nest_list_dialog.dart';
 import 'package:movie_nest/features/nest_list/presentation/ui/discover_page/discover_page.dart';
+import 'package:movie_nest/features/nest_list/presentation/ui/list_page/list_page.dart';
 import 'package:movie_nest/features/nest_list/presentation/ui/private_list_collection_page/private_list_collection_page.dart';
 import 'package:movie_nest/features/nest_list/presentation/viewmodels/private_nest_list_collection_viewmodel.dart';
 import 'package:movie_nest/features/sync/presentation/ui/sync_indicator_button.dart';
@@ -117,6 +119,14 @@ class _BootstrapState extends ConsumerState<Bootstrap> {
                   const NoTransitionPage(child: PrivateListCollectionPage()),
             ),
             GoRoute(
+              path: '/lists/:listId',
+              name: 'list',
+              pageBuilder: (context, state) {
+                final listId = state.pathParameters['listId']!;
+                return NoTransitionPage(child: ListPage(listId: listId));
+              },
+            ),
+            GoRoute(
               path: '/media/public/:mediaId',
               name: 'media',
               pageBuilder: (context, state) {
@@ -126,6 +136,21 @@ class _BootstrapState extends ConsumerState<Bootstrap> {
                   child: MediaPage(
                     mediaId: mediaId,
                     isPublic: true,
+                    isTv: isTv,
+                  ),
+                );
+              },
+            ),
+            GoRoute(
+              path: '/media/:mediaId',
+              name: 'private-media',
+              pageBuilder: (context, state) {
+                final mediaId = state.pathParameters['mediaId']!;
+                final isTv = state.extra as bool? ?? false;
+                return NoTransitionPage(
+                  child: MediaPage(
+                    mediaId: mediaId,
+                    isPublic: false,
                     isTv: isTv,
                   ),
                 );
@@ -155,8 +180,6 @@ class _BootstrapState extends ConsumerState<Bootstrap> {
     if (_isLoaded) {
       return MaterialApp.router(routerConfig: router);
     }
-    return const MaterialApp(
-      home: Scaffold(body: Center(child: CircularProgressIndicator())),
-    );
+    return const MaterialApp(home: SplashScreen());
   }
 }

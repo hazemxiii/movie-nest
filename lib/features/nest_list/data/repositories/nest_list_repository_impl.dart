@@ -98,20 +98,61 @@ class NestListRepositoryImpl extends NestListRepository {
   }
 
   @override
-  Future<NestList> updateList(
-    String listId,
-    NestListDto list,
-    Map<String, int> fieldsVersion,
-  ) async {
-    await _localNestListDatasource.update(listId, list);
-    final remoteList = await _remoteNestListDatasource.update(listId, list);
-    await _localNestListDatasource.update(
+  Future<NestList> updateList(String listId, NestListDto list) async {
+    final oldLocalList = await _localNestListDatasource.getPrivateNestList(
       listId,
-      NestListDto(
-        name: remoteList.name,
-        fieldsVersion: remoteList.fieldsVersion,
-      ),
     );
-    return remoteList;
+    await _localNestListDatasource.update(listId, list);
+    try {
+      final remoteList = await _remoteNestListDatasource.update(listId, list);
+      await _localNestListDatasource.update(
+        listId,
+        NestListDto(
+          name: remoteList.name,
+          fieldsVersion: remoteList.fieldsVersion,
+        ),
+      );
+      return remoteList;
+    } on NestInternetException {
+      _syncQueueDatasource.addOperation(
+        SyncOperation(
+          id: const Uuid().v4(),
+          url: 'lists/$listId',
+          type: SyncOperationType.update,
+          method: 'PUT',
+          entityId: listId,
+          body: list.toUpdateJson(),
+          entityType: SyncOperationEntityType.nestList,
+          createdAt: DateTime.now().toUtc(),
+        ),
+      );
+      return oldLocalList.updateWith(list);
+    } catch (e) {
+      await _localNestListDatasource.update(listId, oldLocalList.toDto());
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<WatchStreamData<NestList>> watchPrivateList(String listId) async* {
+    NestList? localList;
+    String? localError;
+    try {
+      localList = await _localNestListDatasource.getPrivateNestList(listId);
+    } catch (e) {
+      localList = null;
+      localError = e.toString();
+    }
+    yield WatchStreamData(data: localList, isLoading: true, error: localError);
+    // TODO sync media and seasons
+    try {
+      final remoteList = await _remoteNestListDatasource.getPrivateNestList(
+        listId,
+      );
+      await _localNestListDatasource.update(listId, remoteList.toDto());
+      yield WatchStreamData(data: remoteList, isLoading: false);
+    } catch (e) {
+      yield WatchStreamData(data: localList, isLoading: false);
+    }
   }
 }

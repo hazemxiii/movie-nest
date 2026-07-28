@@ -6,7 +6,7 @@ import 'package:movie_nest/core/widgets/nest_button.dart';
 class NestErrorWidget extends ConsumerWidget {
   const NestErrorWidget({
     super.key,
-    required this.title,
+    this.title = 'Error',
     required this.message,
     required this.onTap,
   });

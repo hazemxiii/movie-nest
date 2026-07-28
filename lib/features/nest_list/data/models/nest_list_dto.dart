@@ -35,7 +35,7 @@ class NestListDto {
 
   Map<String, dynamic> toUpdateJson() {
     return {
-      'name': name,
+      'name': ?name,
       'date': date.toIso8601String(),
       'fieldsVersion': fieldsVersion,
     };

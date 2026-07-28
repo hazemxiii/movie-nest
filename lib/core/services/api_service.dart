@@ -81,7 +81,9 @@ class ApiService {
       throw error;
     }
     final error = NestException(
-      body['message'] ?? body['error'] ?? 'Unknown server error',
+      body['message']?.toString() ??
+          body['error']?.toString() ??
+          'Unknown server error',
     );
     NestLogger.logError(error.toString());
     throw error;

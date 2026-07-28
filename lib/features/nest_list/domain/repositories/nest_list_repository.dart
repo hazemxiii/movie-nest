@@ -9,14 +9,11 @@ import 'package:movie_nest/features/sync/data/datasources/local_sync_queue_datas
 
 abstract class NestListRepository {
   Stream<WatchStreamData<NestList>> watchPublicList(String listId);
+  Stream<WatchStreamData<NestList>> watchPrivateList(String listId);
   Stream<WatchStreamData<List<NestList>>> watchPrivateListCollectionSummary();
   Future<void> createList(NestListDto list);
   Future<void> deleteList(String listId);
-  Future<NestList> updateList(
-    String listId,
-    NestListDto list,
-    Map<String, int> fieldsVersion,
-  );
+  Future<NestList> updateList(String listId, NestListDto list);
 }
 
 final nestListRepositoryProvider = Provider<NestListRepository>((ref) {
