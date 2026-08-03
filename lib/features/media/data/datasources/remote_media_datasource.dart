@@ -23,11 +23,7 @@ class RemoteMediaDatasource extends MediaDatasource {
 
   @override
   Future<void> createMedia(MediaDto dto) async {
-    await _apiService.fetch(
-      'media',
-      ApiMethod.post,
-      requestBody: dto.toCreateJson(),
-    );
+    await _apiService.fetch('media', ApiMethod.post, requestBody: dto.toJson());
   }
 
   @override
@@ -37,6 +33,36 @@ class RemoteMediaDatasource extends MediaDatasource {
         .map(Season.fromJson)
         .toList();
     return Media.fromJson(response).copyWith(seasons: seasons);
+  }
+
+  @override
+  Future<Season> toggleEpisode(
+    String mediaId,
+    int seasonNumber,
+    List<int> added,
+    List<int> removed,
+  ) async {
+    final response = await _apiService.fetch(
+      'media/$mediaId/toggle-watched',
+      ApiMethod.post,
+      requestBody: {'added': added, 'removed': removed, 'season': seasonNumber},
+    );
+    return Season.fromJson(response);
+  }
+
+  @override
+  Future<Media> update(MediaDto dto) async {
+    final response = await _apiService.fetch(
+      'media/${dto.id}',
+      ApiMethod.patch,
+      requestBody: dto.toJson(),
+    );
+    return Media.fromJson(response);
+  }
+
+  @override
+  Future<void> delete(String mediaId) async {
+    await _apiService.fetch('media/$mediaId', ApiMethod.delete);
   }
 }
 

@@ -24,30 +24,33 @@ class ListPage extends ConsumerWidget {
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const NestBackButton(),
-                    listState.when(
-                      skipLoadingOnRefresh: false,
-                      data: (data) => NestRefreshButton(
-                        isRefreshing: data.isLoading,
-                        onRefresh: () => refreshList(ref),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const NestBackButton(),
+                      listState.when(
+                        skipLoadingOnRefresh: false,
+                        data: (data) => NestRefreshButton(
+                          isRefreshing: data.isLoading,
+                          onRefresh: () => refreshList(ref),
+                        ),
+                        error: (error, stack) => NestRefreshButton(
+                          isRefreshing: false,
+                          onRefresh: () => refreshList(ref),
+                        ),
+                        loading: () =>
+                            const NestRefreshButton(isRefreshing: true),
                       ),
-                      error: (error, stack) => NestRefreshButton(
-                        isRefreshing: false,
-                        onRefresh: () => refreshList(ref),
-                      ),
-                      loading: () =>
-                          const NestRefreshButton(isRefreshing: true),
-                    ),
-                  ],
-                ),
-                ListDetailsSection(listId: listId),
-              ],
+                    ],
+                  ),
+                  ListDetailsSection(listId: listId),
+                ],
+              ),
             ),
           ),
           listState.when(
@@ -58,7 +61,7 @@ class ListPage extends ConsumerWidget {
               final list = data.data!;
               return SliverGrid(
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 300,
+                  maxCrossAxisExtent: 500,
                   mainAxisExtent: 150,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,

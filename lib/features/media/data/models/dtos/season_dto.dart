@@ -6,6 +6,7 @@ class SeasonDto {
     this.description,
     this.posterUrl,
     this.media,
+    this.watchedEpisodes,
     required this.fieldsVersion,
   });
 
@@ -18,17 +19,8 @@ class SeasonDto {
       'poster_url': ?posterUrl,
       'media': ?media,
       'fieldsVersion': {},
+      'watched_episodes': ?watchedEpisodes,
     };
-  }
-
-  void addWatchedEpisode(int episodeNumber) {
-    addedWatchedEpisodes.add(episodeNumber);
-    removedWatchedEpisodes.remove(episodeNumber);
-  }
-
-  void removeWatchedEpisode(int episodeNumber) {
-    removedWatchedEpisodes.add(episodeNumber);
-    addedWatchedEpisodes.remove(episodeNumber);
   }
 
   static List<String> get encodedFields => [
@@ -38,11 +30,10 @@ class SeasonDto {
 
   late final int number;
   int? episodeCount;
-  List<int> addedWatchedEpisodes = [];
-  List<int> removedWatchedEpisodes = [];
   String? name;
   String? description;
   String? posterUrl;
   String? media;
+  List<int>? watchedEpisodes = [];
   Map<String, int> fieldsVersion;
 }

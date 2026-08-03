@@ -35,6 +35,8 @@ abstract class NestTheme {
   TextStyle get largeBoldMain =>
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: mainC);
   TextStyle get sec => TextStyle(color: secTextC);
+  TextStyle get secBold =>
+      TextStyle(color: secTextC, fontWeight: FontWeight.bold);
   TextStyle get secStrikeBold => TextStyle(
     color: secTextC,
     decoration: TextDecoration.lineThrough,
@@ -44,6 +46,8 @@ abstract class NestTheme {
   );
   TextStyle get mainBold =>
       TextStyle(color: mainC, fontWeight: FontWeight.bold);
+  TextStyle get bigMainBold =>
+      TextStyle(color: mainC, fontSize: 20, fontWeight: FontWeight.bold);
   TextStyle get bigErrorBold =>
       TextStyle(fontSize: 20, color: errorC, fontWeight: FontWeight.bold);
   TextStyle get normal => TextStyle(color: textC);

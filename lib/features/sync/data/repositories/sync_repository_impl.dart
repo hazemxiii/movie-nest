@@ -33,7 +33,7 @@ class SyncRepositoryImpl implements SyncRepository {
         await _syncQueueDatasource.incrementTries(operation.id);
       } catch (e) {
         NestLogger.logError(e, code: 'SNC');
-        // await _syncQueueDatasource.removeOperation(operation.id);
+        await _syncQueueDatasource.removeOperation(operation.id);
       }
     }
   }

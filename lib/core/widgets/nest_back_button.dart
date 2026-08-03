@@ -18,7 +18,10 @@ class NestBackButton extends ConsumerWidget {
           context.go('/');
         }
       },
-      child: const Text('⬅ Back'),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [Icon(Icons.arrow_back), Text('Back')],
+      ),
     );
   }
 }

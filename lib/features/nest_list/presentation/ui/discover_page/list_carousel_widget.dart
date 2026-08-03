@@ -83,35 +83,6 @@ class ListCarouselWidget extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          // if (list.media.length > 5)
-          //   Row(
-          //     spacing: 5,
-          //     mainAxisAlignment: MainAxisAlignment.center,
-          //     children: [
-          //       GestureDetector(
-          //         onTap: () {
-          //           scrollController.animateTo(
-          //             scrollController.position.pixels -
-          //                 scrollController.position.viewportDimension,
-          //             duration: const Duration(milliseconds: 300),
-          //             curve: Curves.easeInOut,
-          //           );
-          //         },
-          //         child: CircleAvatar(radius: 10, backgroundColor: theme.mainC),
-          //       ),
-          //       GestureDetector(
-          //         onTap: () {
-          //           scrollController.animateTo(
-          //             scrollController.position.pixels +
-          //                 scrollController.position.viewportDimension,
-          //             duration: const Duration(milliseconds: 300),
-          //             curve: Curves.easeInOut,
-          //           );
-          //         },
-          //         child: CircleAvatar(radius: 10, backgroundColor: theme.mainC),
-          //       ),
-          //     ],
-          //   ),
         ],
       ),
     );

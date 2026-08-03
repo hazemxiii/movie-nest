@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:movie_nest/core/services/toast_service.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
 import 'package:movie_nest/core/widgets/nest_button.dart';
 import 'package:movie_nest/core/widgets/nest_error_widget.dart';
 import 'package:movie_nest/features/nest_list/presentation/ui/add_nest_list_dialog.dart';
+import 'package:movie_nest/features/nest_list/presentation/ui/list_page/confirm_list_delete_dialog.dart';
 import 'package:movie_nest/features/nest_list/presentation/ui/list_page/list_details_section_shimmer.dart';
+import 'package:movie_nest/features/nest_list/presentation/viewmodels/private_nest_list_collection_viewmodel.dart';
 import 'package:movie_nest/features/nest_list/presentation/viewmodels/private_nest_list_viewmodel.dart';
 
 class ListDetailsSection extends ConsumerWidget {
@@ -77,8 +80,42 @@ class ListDetailsSection extends ConsumerWidget {
             ),
             const SizedBox(width: 6),
             NestButton(
-              onTap: () {
-                // TODO delete list
+              onTap: () async {
+                try {
+                  final result =
+                      await showDialog<ConfirmListDeleteDialogResult>(
+                        context: context,
+                        builder: (context) {
+                          return ConfirmListDeleteDialog(list: list);
+                        },
+                      );
+                  if (result?.isConfirmed ?? false) {
+                    await ref
+                        .read(
+                          privateNestListCollectionViewmodelProvider.notifier,
+                        )
+                        .deleteList(
+                          list.id,
+                          moveToListId: result!.moveToListId,
+                        );
+                    if (result.moveToListId != null) {
+                      ref.invalidate(
+                        privateNestListViewmodelProvider(result.moveToListId!),
+                      );
+                    }
+                    if (context.mounted) {
+                      context.pop();
+                    }
+                  }
+                } catch (e) {
+                  if (!context.mounted) return;
+                  ToastService.error(
+                    context,
+                    theme,
+                    message: e.toString(),
+                    title: 'Error deleting list',
+                  );
+                }
               },
               text: 'Delete',
               backC: theme.errorC.withAlpha(20),

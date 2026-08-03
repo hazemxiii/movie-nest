@@ -18,7 +18,6 @@ class MediaPage extends ConsumerWidget {
   final String mediaId;
   final bool isPublic;
   final bool isTv;
-  // TODO private media
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mediaState = isPublic

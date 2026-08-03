@@ -2,9 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:movie_nest/core/models/watch_stream_data.dart';
 import 'package:movie_nest/core/services/toast_service.dart';
+import 'package:movie_nest/core/theme/nest_theme.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
 import 'package:movie_nest/core/widgets/nest_button.dart';
 import 'package:movie_nest/core/widgets/nest_error_widget.dart';
@@ -124,12 +126,13 @@ class MediaHeader extends ConsumerWidget {
                               if (media.originalTitle.toLowerCase() !=
                                   media.title.toLowerCase())
                                 Text(media.originalTitle, style: theme.sec),
-                              Text(
-                                '"${media.tag}"',
-                                style: theme.sec.copyWith(
-                                  fontStyle: FontStyle.italic,
+                              if (media.tag.trim().isNotEmpty)
+                                Text(
+                                  '"${media.tag}"',
+                                  style: theme.sec.copyWith(
+                                    fontStyle: FontStyle.italic,
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                           Wrap(
@@ -185,40 +188,37 @@ class MediaHeader extends ConsumerWidget {
                             maxLines: null,
                             // overflow: TextOverflow.ellipsis,
                           ),
-                          if (isPublic) ...[
-                            const SizedBox(height: 20),
+                          const SizedBox(height: 20),
+                          if (isPublic)
                             NestButton(
                               onTap: () async {
-                                final selectedListId = await showDialog<String>(
-                                  context: context,
-                                  builder: (context) =>
-                                      const SelectListDialog(),
+                                await addToWatchList(
+                                  context,
+                                  ref,
+                                  theme,
+                                  media!,
                                 );
-                                if (selectedListId == null) return;
-                                try {
-                                  await ref
-                                      .read(
-                                        privateNestListViewmodelProvider(
-                                          selectedListId,
-                                        ).notifier,
-                                      )
-                                      .addMedia(media!.toDto());
-                                } catch (e) {
-                                  if (!context.mounted) return;
-                                  ToastService.error(
-                                    context,
-                                    theme,
-                                    message: e.toString(),
-                                    title: 'Couldn\'t add to list',
-                                  );
-                                }
                               },
                               backC: theme.mainC,
                               textC: theme.textC,
                               icon: Icons.add,
                               text: 'Add to List',
+                            )
+                          else
+                            NestButton(
+                              onTap: () async {
+                                await removeFromWatchList(
+                                  context,
+                                  ref,
+                                  theme,
+                                  media!,
+                                );
+                              },
+                              backC: theme.mainC,
+                              textC: theme.textC,
+                              icon: Icons.remove,
+                              text: 'Remove from List',
                             ),
-                          ],
                         ],
                       ),
                     ),
@@ -242,5 +242,55 @@ class MediaHeader extends ConsumerWidget {
         return const MediaPageShimmer();
       },
     );
+  }
+
+  Future<void> removeFromWatchList(
+    BuildContext context,
+    WidgetRef ref,
+    NestTheme theme,
+    Media media,
+  ) async {
+    try {
+      await ref
+          .read(privateMediaViewmodelProvider(mediaId).notifier)
+          .deleteMedia();
+      if (context.mounted) {
+        context.pop();
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      ToastService.error(
+        context,
+        theme,
+        message: e.toString(),
+        title: 'Couldn\'t add to list',
+      );
+    }
+  }
+
+  Future<void> addToWatchList(
+    BuildContext context,
+    WidgetRef ref,
+    NestTheme theme,
+    Media media,
+  ) async {
+    final selectedListId = await showDialog<String>(
+      context: context,
+      builder: (context) => const SelectListDialog(),
+    );
+    if (selectedListId == null) return;
+    try {
+      await ref
+          .read(privateNestListViewmodelProvider(selectedListId).notifier)
+          .addMedia(media.toDto());
+    } catch (e) {
+      if (!context.mounted) return;
+      ToastService.error(
+        context,
+        theme,
+        message: e.toString(),
+        title: 'Couldn\'t add to list',
+      );
+    }
   }
 }

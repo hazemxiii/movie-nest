@@ -43,12 +43,39 @@ class LocalNestListDatasource extends NestListDatasource {
 
   @override
   Future<void> delete(String listId, {String? moveToListId}) async {
+    if (moveToListId == null) {
+      final mediaMap = await _sqliteService.query(
+        _sqliteService.mediaTable,
+        where: 'listId = ?',
+        whereArgs: [listId],
+      );
+      final mediaIds = <String>{};
+      for (final media in mediaMap) {
+        mediaIds.add(media['id'] as String);
+      }
+      await _sqliteService.delete(
+        _sqliteService.seasonsTable,
+        where: 'media IN (${mediaIds.map((id) => '?').join(',')})',
+        whereArgs: mediaIds.toList(),
+      );
+      await _sqliteService.delete(
+        _sqliteService.mediaTable,
+        where: 'listId = ?',
+        whereArgs: [listId],
+      );
+    } else {
+      await _sqliteService.update(
+        _sqliteService.mediaTable,
+        {'listId': moveToListId},
+        where: 'listId = ?',
+        whereArgs: [listId],
+      );
+    }
     await _sqliteService.delete(
       _sqliteService.nestListTable,
       where: 'id = ?',
       whereArgs: [listId],
     );
-    // TODO delete media too
   }
 
   @override

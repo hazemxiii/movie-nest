@@ -42,9 +42,6 @@ class Season {
   });
 
   Season copyWithDto(SeasonDto dto) {
-    final updatedWatchedEpisodes = {...watchedEpisodes};
-    updatedWatchedEpisodes.addAll(dto.addedWatchedEpisodes);
-    updatedWatchedEpisodes.removeAll(dto.removedWatchedEpisodes);
     return Season(
       number: dto.number,
       episodeCount: dto.episodeCount ?? episodeCount,
@@ -53,7 +50,7 @@ class Season {
       posterUrl: dto.posterUrl,
       media: dto.media ?? media,
       fieldsVersion: dto.fieldsVersion,
-      watchedEpisodes: updatedWatchedEpisodes.toList(),
+      watchedEpisodes: dto.watchedEpisodes ?? watchedEpisodes,
     );
   }
 
@@ -87,6 +84,7 @@ class Season {
       name: name,
       description: description,
       posterUrl: posterUrl,
+      watchedEpisodes: watchedEpisodes,
       media: media,
       fieldsVersion: fieldsVersion ?? {},
     );

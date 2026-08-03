@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:movie_nest/core/services/toast_service.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
 import 'package:movie_nest/core/widgets/nest_button.dart';
 import 'package:movie_nest/features/media/data/models/media.dart';
-import 'package:movie_nest/features/media/data/models/season.dart';
+import 'package:movie_nest/features/media/presentation/viewmodels/private_media_viewmodel.dart';
 
 class SeasonsSection extends ConsumerStatefulWidget {
   const SeasonsSection({
@@ -19,23 +22,33 @@ class SeasonsSection extends ConsumerStatefulWidget {
 }
 
 class _SeasonsSectionState extends ConsumerState<SeasonsSection> {
-  late Season selectedSeason;
+  // late Season selectedSeason;
+  late int selectedSeasonNumber;
 
   @override
   void initState() {
     super.initState();
     if (widget.media.seasons.isNotEmpty) {
-      selectedSeason = widget.media.seasons.first;
+      // selectedSeason = widget.media.seasons.first;
+      selectedSeasonNumber = widget.media.seasons.first.number;
     }
   }
 
+  Timer? _debounce;
+  final added = <int>[];
+  final removed = <int>[];
+
   @override
   Widget build(BuildContext context) {
+    final isScreenSmall = MediaQuery.of(context).size.width < 600;
     final theme = ref.watch(themeProvider).value!;
     final progress = widget.media.progress;
     if (widget.media.seasons.isEmpty) {
       return const SizedBox.shrink();
     }
+    final selectedSeason = widget.media.seasons.firstWhere(
+      (season) => season.number == selectedSeasonNumber,
+    );
     return Container(
       padding: const EdgeInsets.all(30),
       width: double.infinity,
@@ -46,17 +59,34 @@ class _SeasonsSectionState extends ConsumerState<SeasonsSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Flex(
+            spacing: 10,
+            direction: isScreenSmall ? Axis.vertical : Axis.horizontal,
+            crossAxisAlignment: isScreenSmall
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
+            mainAxisAlignment: isScreenSmall
+                ? MainAxisAlignment.start
+                : MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Track episodes', style: theme.bigBold),
                   if (!widget.isPublic)
-                    Text(
-                      '${progress.totalWatched} of ${progress.totalEpisodes} watched . ${(progress.progress * 100).toStringAsFixed(0)}%',
-                      style: theme.sec,
+                    RichText(
+                      text: TextSpan(
+                        text:
+                            '${progress.totalWatched} of ${progress.totalEpisodes} watched  ',
+                        style: theme.sec,
+                        children: [
+                          TextSpan(
+                            text:
+                                '${(progress.progress * 100).toStringAsFixed(0)}%',
+                            style: theme.mainBold,
+                          ),
+                        ],
+                      ),
                     ),
                 ],
               ),
@@ -79,25 +109,74 @@ class _SeasonsSectionState extends ConsumerState<SeasonsSection> {
             runSpacing: 8,
             children: widget.media.seasons.map((season) {
               return NestButton(
-                borderC: selectedSeason != season ? theme.borderC : null,
+                borderC: selectedSeasonNumber != season.number
+                    ? theme.borderC
+                    : null,
                 onTap: () {
                   setState(() {
-                    selectedSeason = season;
+                    selectedSeasonNumber = season.number;
                   });
                 },
-                text: 'Season ${season.number}',
-                backC: selectedSeason == season ? theme.mainC : theme.secBackC,
-                textC: selectedSeason == season ? theme.textC : theme.secTextC,
+                text: 'Season ${season.number} (${season.episodeCount})',
+                backC: selectedSeasonNumber == season.number
+                    ? theme.mainC
+                    : theme.secBackC,
+                textC: selectedSeasonNumber == season.number
+                    ? theme.textC
+                    : theme.secTextC,
               );
             }).toList(),
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 5),
           if (!widget.isPublic)
             Text(
               '${selectedSeason.watchedEpisodes.length}/${selectedSeason.episodeCount}',
               style: theme.sec,
             ),
           const SizedBox(height: 16),
+          if (!widget.isPublic) ...[
+            Wrap(
+              spacing: 10,
+              runSpacing: 5,
+              children: [
+                NestButton(
+                  onTap: () {
+                    for (int i = 0; i < selectedSeason.episodeCount; i++) {
+                      final number = i + 1;
+                      if (!widget.media.isEpisodeWatched(
+                            selectedSeason.number,
+                            number,
+                          ) &&
+                          !added.contains(number)) {
+                        added.add(number);
+                        removed.remove(number);
+                      }
+                    }
+                    _toggleAll(selectedSeasonNumber, added, removed);
+                  },
+                  text: 'Mark all as watched',
+                ),
+                NestButton(
+                  onTap: () {
+                    for (int i = 0; i < selectedSeason.episodeCount; i++) {
+                      final number = i + 1;
+                      if (widget.media.isEpisodeWatched(
+                            selectedSeason.number,
+                            number,
+                          ) &&
+                          !removed.contains(number)) {
+                        removed.add(number);
+                        added.remove(number);
+                      }
+                    }
+                    _toggleAll(selectedSeasonNumber, added, removed);
+                  },
+                  text: 'Mark all as unwatched',
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
@@ -108,12 +187,15 @@ class _SeasonsSectionState extends ConsumerState<SeasonsSection> {
               shrinkWrap: true,
               itemCount: selectedSeason.episodeCount,
               itemBuilder: (context, index) {
-                final isWatched = widget.isPublic
+                final initIsWatched = widget.isPublic
                     ? false
                     : widget.media.isEpisodeWatched(
                         selectedSeason.number,
                         index + 1,
                       );
+                final isWatched =
+                    (initIsWatched || added.contains(index + 1)) &&
+                    !removed.contains(index + 1);
                 return Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -125,7 +207,11 @@ class _SeasonsSectionState extends ConsumerState<SeasonsSection> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          // TODO: Handle episode watch toggle
+                          _onEpisodeToggle(
+                            selectedSeason.number,
+                            index + 1,
+                            !isWatched,
+                          );
                         },
                         child: Container(
                           width: 24,
@@ -154,5 +240,65 @@ class _SeasonsSectionState extends ConsumerState<SeasonsSection> {
         ],
       ),
     );
+  }
+
+  Future<void> _toggleAll(
+    int seasonNumber,
+    List<int> added,
+    List<int> removed,
+  ) async {
+    try {
+      await ref
+          .read(privateMediaViewmodelProvider(widget.media.id).notifier)
+          .toggleEpisodeWatched(seasonNumber, added, removed);
+      added.clear();
+      removed.clear();
+    } catch (e) {
+      if (mounted) {
+        ToastService.error(
+          context,
+          ref.watch(themeProvider).value!,
+          message: e.toString(),
+          title: 'Failed to update episode status',
+        );
+      }
+    }
+  }
+
+  void _onEpisodeToggle(int seasonNumber, int episodeNumber, bool isAdded) {
+    setState(() {
+      if (isAdded) {
+        if (removed.contains(episodeNumber)) {
+          removed.remove(episodeNumber);
+        } else {
+          added.add(episodeNumber);
+        }
+      } else {
+        if (added.contains(episodeNumber)) {
+          added.remove(episodeNumber);
+        } else {
+          removed.add(episodeNumber);
+        }
+      }
+    });
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 1000), () async {
+      try {
+        await ref
+            .read(privateMediaViewmodelProvider(widget.media.id).notifier)
+            .toggleEpisodeWatched(seasonNumber, added, removed);
+        added.clear();
+        removed.clear();
+      } catch (e) {
+        if (mounted) {
+          ToastService.error(
+            context,
+            ref.watch(themeProvider).value!,
+            message: e.toString(),
+            title: 'Failed to update episode status',
+          );
+        }
+      }
+    });
   }
 }

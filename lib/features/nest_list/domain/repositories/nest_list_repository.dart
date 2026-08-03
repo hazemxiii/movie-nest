@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:movie_nest/core/models/watch_stream_data.dart';
+import 'package:movie_nest/features/media/data/datasources/local_media_datasource.dart';
 import 'package:movie_nest/features/nest_list/data/datasources/local_nest_list_datasource.dart';
 import 'package:movie_nest/features/nest_list/data/datasources/remote_nest_list_datasource.dart';
 import 'package:movie_nest/features/nest_list/data/models/nest_list.dart';
@@ -12,7 +13,7 @@ abstract class NestListRepository {
   Stream<WatchStreamData<NestList>> watchPrivateList(String listId);
   Stream<WatchStreamData<List<NestList>>> watchPrivateListCollectionSummary();
   Future<void> createList(NestListDto list);
-  Future<void> deleteList(String listId);
+  Future<void> deleteList(String listId, {String? moveToListId});
   Future<NestList> updateList(String listId, NestListDto list);
 }
 
@@ -21,5 +22,6 @@ final nestListRepositoryProvider = Provider<NestListRepository>((ref) {
     remoteNestListDatasource: ref.read(remoteNestListDatasourceProvider),
     localNestListDatasource: ref.read(localNestListDatasourceProvider),
     syncQueueDatasource: ref.read(localSyncQueueDatasourceProvider),
+    localMediaDatasource: ref.read(localMediaDatasourceProvider),
   );
 });

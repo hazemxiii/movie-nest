@@ -33,6 +33,25 @@ class PrivateNestListCollectionViewmodel
       rethrow;
     }
   }
+
+  Future<void> deleteList(String listId, {String? moveToListId}) async {
+    final oldLists = state.value?.data ?? [];
+    state = AsyncValue.data(
+      WatchStreamData(
+        data: oldLists.where((list) => list.id != listId).toList(),
+        isLoading: false,
+      ),
+    );
+    final repository = ref.read(nestListRepositoryProvider);
+    try {
+      await repository.deleteList(listId, moveToListId: moveToListId);
+    } catch (e) {
+      state = AsyncValue.data(
+        WatchStreamData(data: oldLists, isLoading: false),
+      );
+      rethrow;
+    }
+  }
 }
 
 final privateNestListCollectionViewmodelProvider =

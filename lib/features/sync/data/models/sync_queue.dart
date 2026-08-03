@@ -62,6 +62,8 @@ class SyncOperationType {
 
 class SyncOperationEntityType {
   static const String nestList = 'nestList';
+  static const String media = 'media';
+  static const String episodes = 'episodes';
 }
 
 // enum SyncOperationType { create }

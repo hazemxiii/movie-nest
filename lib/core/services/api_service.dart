@@ -14,6 +14,7 @@ const fakeToken =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNjA1Y2FmYTczZjQ0N2JjNDAwNmE0YiIsImVtYWlsIjoidXNlcjFAZW1haWwuY29tIiwiaWF0IjoxNzg0NzAwNDY4LCJleHAiOjE3ODk4ODQ0Njh9.tCErkXQWZ_q4sNZhrMCbfCyrhFyrz8C2EuKG15BA3f4';
 
 class ApiService {
+  // final _baseUrl = 'https://movie-nest-api.vercel.app';
   final _baseUrl = 'http://localhost:3000';
 
   Future<Map<String, dynamic>> fetch(

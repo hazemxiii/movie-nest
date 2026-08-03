@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:movie_nest/core/services/nest_platform.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
 import 'package:movie_nest/core/widgets/nest_error_widget.dart';
@@ -78,7 +79,9 @@ class PrivateListCollectionPage extends ConsumerWidget {
                     },
                   );
                 }
-                return Column(
+                return Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
                   children: [
                     ...data.data!.map(
                       (list) => GestureDetector(
@@ -86,14 +89,47 @@ class PrivateListCollectionPage extends ConsumerWidget {
                           context.push('/lists/${list.id}');
                         },
                         child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(26),
                           decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(color: theme.borderC),
-                            ),
+                            borderRadius: BorderRadius.circular(25),
+                            color: theme.mainC.withValues(alpha: 0.03),
+                            border: Border.all(color: theme.borderC),
                           ),
-                          child: Text(list.name, style: theme.bold),
+                          child: Row(
+                            spacing: 5,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  color: theme.mainC.withValues(alpha: 0.2),
+                                ),
+                                child: Text(
+                                  list.name[0],
+                                  style: theme.bigMainBold,
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (list.date != null)
+                                    Text(
+                                      "Created at ${DateFormat('dd-MMM-yyyy').format(list.date!)}",
+                                      style: theme.secSmall,
+                                    ),
+                                  Text(list.name, style: theme.bigBold),
+                                ],
+                              ),
+                              Icon(
+                                Icons.play_arrow_outlined,
+                                color: theme.mainC,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

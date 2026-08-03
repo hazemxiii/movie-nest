@@ -40,8 +40,11 @@ class RemoteNestListDatasource implements NestListDatasource {
   }
 
   @override
-  Future<void> delete(String listId) async {
-    await _apiService.fetch('lists/$listId', ApiMethod.delete);
+  Future<void> delete(String listId, {String? moveToListId}) async {
+    await _apiService.fetch(
+      'lists/$listId${moveToListId != null ? '?moveTo=$moveToListId' : ''}',
+      ApiMethod.delete,
+    );
   }
 
   @override

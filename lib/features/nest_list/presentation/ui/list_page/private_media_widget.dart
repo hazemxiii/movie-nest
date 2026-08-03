@@ -43,9 +43,12 @@ class PrivateMediaWidget extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          '${media.progress.totalWatched}/${media.progress.totalEpisodes} Episodes',
-                          style: theme.secSmallBold,
+                        Expanded(
+                          child: Text(
+                            overflow: TextOverflow.ellipsis,
+                            '${media.progress.totalWatched}/${media.progress.totalEpisodes} Episodes',
+                            style: theme.secSmallBold,
+                          ),
                         ),
                         Text(
                           '${(media.progress.progress * 100).toInt()}%',
