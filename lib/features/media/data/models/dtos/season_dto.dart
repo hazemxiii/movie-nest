@@ -28,7 +28,7 @@ class SeasonDto {
     'watched_episodes',
   ];
 
-  late final int number;
+  late int number;
   int? episodeCount;
   String? name;
   String? description;

@@ -127,4 +127,28 @@ class MediaRepositoryImpl implements MediaRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<Media> updateMedia(MediaDto dto) async {
+    final localMedia = await _localDatasource.update(dto);
+    try {
+      return await _remoteDatasource.update(dto);
+    } on NestInternetException {
+      _syncQueueDatasource.addOperation(
+        SyncOperation(
+          id: const Uuid().v4(),
+          url: 'media/${dto.id}',
+          type: SyncOperationType.update,
+          method: 'PUT',
+          entityId: dto.id,
+          body: dto.toJson(),
+          entityType: SyncOperationEntityType.media,
+          createdAt: DateTime.now().toUtc(),
+        ),
+      );
+      return localMedia;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

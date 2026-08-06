@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:movie_nest/core/services/toast_service.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
 import 'package:movie_nest/core/widgets/nest_button.dart';
@@ -22,16 +23,11 @@ class SeasonsSection extends ConsumerStatefulWidget {
 }
 
 class _SeasonsSectionState extends ConsumerState<SeasonsSection> {
-  // late Season selectedSeason;
-  late int selectedSeasonNumber;
+  int selectedSeasonNumber = 1;
 
   @override
   void initState() {
     super.initState();
-    if (widget.media.seasons.isNotEmpty) {
-      // selectedSeason = widget.media.seasons.first;
-      selectedSeasonNumber = widget.media.seasons.first.number;
-    }
   }
 
   Timer? _debounce;
@@ -48,6 +44,7 @@ class _SeasonsSectionState extends ConsumerState<SeasonsSection> {
     }
     final selectedSeason = widget.media.seasons.firstWhere(
       (season) => season.number == selectedSeasonNumber,
+      orElse: () => widget.media.seasons.first,
     );
     return Container(
       padding: const EdgeInsets.all(30),
@@ -73,6 +70,16 @@ class _SeasonsSectionState extends ConsumerState<SeasonsSection> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Track episodes', style: theme.bigBold),
+                  if (widget.media.lastAirDate != null)
+                    Text(
+                      'Last air date: ${DateFormat('dd-MM-yyyy').format(widget.media.lastAirDate!)}',
+                      style: theme.secBold,
+                    ),
+                  if (widget.media.nextAirDate != null)
+                    Text(
+                      'Next air date: ${DateFormat('dd-MM-yyyy').format(widget.media.nextAirDate!)}',
+                      style: theme.secBold,
+                    ),
                   if (!widget.isPublic)
                     RichText(
                       text: TextSpan(
@@ -207,6 +214,7 @@ class _SeasonsSectionState extends ConsumerState<SeasonsSection> {
                     children: [
                       GestureDetector(
                         onTap: () {
+                          if (widget.isPublic) return;
                           _onEpisodeToggle(
                             selectedSeason.number,
                             index + 1,
@@ -247,6 +255,7 @@ class _SeasonsSectionState extends ConsumerState<SeasonsSection> {
     List<int> added,
     List<int> removed,
   ) async {
+    setState(() {});
     try {
       await ref
           .read(privateMediaViewmodelProvider(widget.media.id).notifier)

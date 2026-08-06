@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:movie_nest/core/exceptions/nest_exception.dart';
-import 'package:movie_nest/core/services/sqlite_service.dart';
+import 'package:movie_nest/core/services/database_services/sqlite_service.dart';
 import 'package:movie_nest/features/media/data/models/dtos/media_dto.dart';
 import 'package:movie_nest/features/media/data/models/dtos/season_dto.dart';
 import 'package:movie_nest/features/media/data/models/media.dart';

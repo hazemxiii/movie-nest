@@ -1,6 +1,7 @@
 import 'package:movie_nest/core/exceptions/nest_secret_exception.dart';
 import 'package:movie_nest/core/services/nest_logger.dart';
 import 'package:movie_nest/features/media/data/models/dtos/media_dto.dart';
+import 'package:movie_nest/features/media/data/models/dtos/season_dto.dart';
 import 'package:movie_nest/features/media/data/models/season.dart';
 
 class Media {
@@ -25,6 +26,8 @@ class Media {
     this.fieldsVersion,
     this.version = 1,
     required this.seasons,
+    this.lastAirDate,
+    this.nextAirDate,
   });
 
   factory Media.empty() {
@@ -57,6 +60,12 @@ class Media {
         originalTitle: json['original_title'] as String?,
         description: json['description'] as String,
         posterUrl: json['poster_url'] as String,
+        lastAirDate: json['last_air_date'] != null
+            ? DateTime.parse(json['last_air_date'] as String)
+            : null,
+        nextAirDate: json['next_air_date'] != null
+            ? DateTime.parse(json['next_air_date'] as String)
+            : null,
         type: json['type'] as String,
         date: DateTime.parse(json['date'] as String),
         end: json['end'] != null ? DateTime.parse(json['end'] as String) : null,
@@ -90,6 +99,8 @@ class Media {
   final String description;
   final String posterUrl;
   final String type;
+  final DateTime? lastAirDate;
+  final DateTime? nextAirDate;
   final DateTime date;
   final DateTime? end;
   final double rating;
@@ -115,6 +126,8 @@ class Media {
       'type': type,
       'date': date.toIso8601String(),
       'end': end?.toIso8601String(),
+      'last_air_date': lastAirDate?.toIso8601String(),
+      'next_air_date': nextAirDate?.toIso8601String(),
       'rating': rating,
       'run_time': runTime,
       'genres': genres,
@@ -138,6 +151,8 @@ class Media {
     String? type,
     DateTime? date,
     DateTime? end,
+    DateTime? lastAirDate,
+    DateTime? nextAirDate,
     double? rating,
     int? runTime,
     List<String>? genres,
@@ -160,6 +175,8 @@ class Media {
       type: type ?? this.type,
       date: date ?? this.date,
       end: end ?? this.end,
+      lastAirDate: lastAirDate ?? this.lastAirDate,
+      nextAirDate: nextAirDate ?? this.nextAirDate,
       rating: rating ?? this.rating,
       runTime: runTime ?? this.runTime,
       genres: genres ?? this.genres,
@@ -174,6 +191,11 @@ class Media {
   }
 
   Media copyWithDto(MediaDto dto) {
+    final seasonsDtoNum = <int, SeasonDto>{};
+    for (var s in dto.seasonsDto) {
+      seasonsDtoNum[s.number] = s;
+    }
+
     return Media(
       id: dto.id,
       list: dto.list ?? list,
@@ -185,25 +207,22 @@ class Media {
       type: dto.type ?? type,
       date: dto.date ?? date,
       end: dto.end ?? end,
+      lastAirDate: dto.lastAirDate ?? lastAirDate,
+      nextAirDate: dto.nextAirDate ?? nextAirDate,
       rating: dto.rating ?? rating,
       runTime: dto.runTime ?? runTime,
       genres: dto.genres ?? genres,
-      episodeCount: dto.episodeCount,
-      seasonCount: dto.seasonCount,
+      episodeCount: dto.episodeCount ?? episodeCount,
+      seasonCount: dto.seasonCount ?? seasonCount,
       status: dto.status ?? status,
       tag: dto.tag ?? tag,
       fieldsVersion: dto.fieldsVersion,
       version: version,
-      seasons: dto.seasonsDto
-          .map(
-            (season) => Season(
-              number: 0,
-              episodeCount: 0,
-              watchedEpisodes: [0],
-              media: id,
-            ).copyWithDto(season),
-          )
-          .toList(),
+      seasons: seasons.map((s) {
+        final dto = seasonsDtoNum[s.number];
+        if (dto == null) return s;
+        return s.copyWithDto(dto);
+      }).toList(),
     );
   }
 
@@ -219,6 +238,8 @@ class Media {
       type: type,
       date: date,
       end: end,
+      lastAirDate: lastAirDate,
+      nextAirDate: nextAirDate,
       rating: rating,
       runTime: runTime,
       genres: genres,
@@ -249,6 +270,7 @@ class Media {
     int totalEpisodes = 0;
     int totalWatched = 0;
     for (final s in seasons) {
+      if (s.number == 0) continue;
       totalEpisodes += s.episodeCount;
       totalWatched += s.watchedEpisodes.length;
     }

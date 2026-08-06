@@ -12,6 +12,8 @@ class MediaDto {
     this.type,
     this.date,
     this.end,
+    this.lastAirDate,
+    this.nextAirDate,
     this.rating,
     this.runTime,
     this.genres,
@@ -35,6 +37,8 @@ class MediaDto {
       'type': ?type,
       'date': ?date?.toIso8601String(),
       'end': ?end?.toIso8601String(),
+      'last_air_date': ?lastAirDate?.toIso8601String(),
+      'next_air_date': ?nextAirDate?.toIso8601String(),
       'rating': ?rating,
       'run_time': ?runTime,
       'genres': ?genres,
@@ -59,6 +63,8 @@ class MediaDto {
   String? type;
   DateTime? date;
   DateTime? end;
+  DateTime? lastAirDate;
+  DateTime? nextAirDate;
   double? rating;
   int? runTime;
   List<String>? genres;

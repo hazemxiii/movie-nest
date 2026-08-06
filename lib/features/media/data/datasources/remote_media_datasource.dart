@@ -57,7 +57,11 @@ class RemoteMediaDatasource extends MediaDatasource {
       ApiMethod.patch,
       requestBody: dto.toJson(),
     );
-    return Media.fromJson(response);
+    final media = Media.fromJson(response);
+    final seasons = (response['seasons'] as List? ?? [])
+        .map(Season.fromJson)
+        .toList();
+    return media.copyWith(seasons: seasons);
   }
 
   @override

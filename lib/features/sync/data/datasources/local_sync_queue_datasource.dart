@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:movie_nest/core/services/sqlite_service.dart';
+import 'package:movie_nest/core/services/database_services/sqlite_service.dart';
 import 'package:movie_nest/features/sync/data/datasources/sync_queue_datasource.dart';
 import 'package:movie_nest/features/sync/data/models/sync_queue.dart';
 

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:movie_nest/core/exceptions/nest_secret_exception.dart';
+import 'package:movie_nest/core/services/database_services/migrations/add_next_last_air_dates.dart';
+import 'package:movie_nest/core/services/database_services/migrations/migration.dart';
 import 'package:movie_nest/core/services/nest_logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -15,12 +17,15 @@ class SqliteService {
   final String nestListTable = 'nest_lists';
   final String mediaTable = 'media';
   final String seasonsTable = 'seasons';
+  final String migrationTable = 'migrations';
 
   final Map<String, List<String>> encodedFields = {
     'nest_lists': ['fieldsVersion'],
     'media': ['genres', 'fieldsVersion'],
     'seasons': ['fieldsVersion', 'watched_episodes'],
   };
+
+  List<Migration> get migrations => [AddNextLastAirDates()];
 
   Future<void> init() async {
     final databaseFactory = databaseFactoryFfi;
@@ -30,9 +35,33 @@ class SqliteService {
     NestLogger.log('Database path: $dbPath');
     _database = await databaseFactory.openDatabase(dbPath);
     await _createTables();
+    await _runMigrations();
+  }
+
+  Future<void> _runMigrations() async {
+    final appliedMigrationsNames = await query(
+      migrationTable,
+    ).then((rows) => rows.map((row) => row['name'] as String).toList());
+    for (final migration in migrations) {
+      if (appliedMigrationsNames.contains(migration.name)) {
+        continue;
+      }
+      await migration.migrate(_database);
+      await insert(migrationTable, {
+        'name': migration.name,
+        'applied_at': DateTime.now().toUtc().toIso8601String(),
+      });
+    }
   }
 
   Future<void> _createTables() async {
+    await _database.execute('''
+    CREATE TABLE IF NOT EXISTS migrations (
+    name TEXT PRIMARY KEY,
+    applied_at TEXT NOT NULL
+);
+''');
+
     await _database.execute('''
     CREATE TABLE IF NOT EXISTS nest_lists (
     id TEXT PRIMARY KEY,

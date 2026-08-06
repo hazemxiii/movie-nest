@@ -19,6 +19,7 @@ abstract class MediaRepository {
     List<int> added,
     List<int> removed,
   );
+  Future<Media> updateMedia(MediaDto dto);
 }
 
 final mediaRepositoryProvider = Provider<MediaRepository>((ref) {

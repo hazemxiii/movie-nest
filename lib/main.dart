@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:movie_nest/core/services/sqlite_service.dart';
+import 'package:movie_nest/core/services/database_services/sqlite_service.dart';
 import 'package:movie_nest/core/services/toast_service.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
 import 'package:movie_nest/core/widgets/nest_button.dart';
 import 'package:movie_nest/core/widgets/splash_screen.dart';
 import 'package:movie_nest/features/media/presentation/ui/media_page.dart';
+import 'package:movie_nest/features/nest_list/data/models/nest_list_dto.dart';
 import 'package:movie_nest/features/nest_list/presentation/ui/add_nest_list_dialog.dart';
 import 'package:movie_nest/features/nest_list/presentation/ui/discover_page/discover_page.dart';
 import 'package:movie_nest/features/nest_list/presentation/ui/list_page/list_page.dart';
@@ -32,6 +33,8 @@ class _BootstrapState extends ConsumerState<Bootstrap> {
     await ref.read(sqliteServiceProvider).init();
     final theme = ref.watch(themeProvider).value!;
     router = GoRouter(
+      // TODO remove this later
+      initialLocation: 'media/b8c228c7-0e8b-4c55-8490-68e8ed91b883',
       routes: [
         ShellRoute(
           builder: (context, state, child) {
@@ -55,30 +58,29 @@ class _BootstrapState extends ConsumerState<Bootstrap> {
                   Container(
                     margin: const EdgeInsets.only(right: 16),
                     child: NestButton(
-                      onTap: () {
-                        showDialog(
+                      onTap: () async {
+                        final result = await showDialog<NestListDto>(
                           context: context,
-                          builder: (context) => AddNestListDialog(
-                            onCreated: (nestListDto) async {
-                              try {
-                                await ref
-                                    .read(
-                                      privateNestListCollectionViewmodelProvider
-                                          .notifier,
-                                    )
-                                    .addList(nestListDto);
-                              } catch (e) {
-                                if (!context.mounted) return;
-                                ToastService.error(
-                                  context,
-                                  theme,
-                                  title: 'Error',
-                                  message: e.toString(),
-                                );
-                              }
-                            },
-                          ),
+                          builder: (context) => const AddNestListDialog(),
                         );
+                        if (result != null && mounted) {
+                          try {
+                            await ref
+                                .read(
+                                  privateNestListCollectionViewmodelProvider
+                                      .notifier,
+                                )
+                                .addList(result);
+                          } catch (e) {
+                            if (!context.mounted) return;
+                            ToastService.error(
+                              context,
+                              theme,
+                              title: 'Error',
+                              message: e.toString(),
+                            );
+                          }
+                        }
                       },
                       text: 'New List',
                       backC: theme.mainC,

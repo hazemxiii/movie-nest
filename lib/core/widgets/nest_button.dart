@@ -12,6 +12,7 @@ class NestButton extends ConsumerStatefulWidget {
     this.textC,
     this.borderC,
     this.radius = 999,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
   });
   final String? text;
   final IconData? icon;
@@ -20,6 +21,7 @@ class NestButton extends ConsumerStatefulWidget {
   final Color? borderC;
   final double radius;
   final VoidCallback onTap;
+  final EdgeInsets padding;
 
   @override
   ConsumerState<NestButton> createState() => _NestButtonState();
@@ -33,7 +35,7 @@ class _NestButtonState extends ConsumerState<NestButton> {
       onTap: widget.onTap,
       borderRadius: BorderRadius.circular(widget.radius),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: widget.padding,
         decoration: BoxDecoration(
           color: widget.backC ?? theme.textC,
           borderRadius: BorderRadius.circular(widget.radius),

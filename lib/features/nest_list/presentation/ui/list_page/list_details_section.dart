@@ -50,28 +50,26 @@ class ListDetailsSection extends ConsumerWidget {
               ),
             ),
             NestButton(
-              onTap: () {
-                showDialog(
+              onTap: () async {
+                final result = await showDialog(
                   context: context,
                   builder: (context) {
-                    return AddNestListDialog(
-                      onCreated: (list) async {
-                        try {
-                          await listController.updateList(list);
-                        } catch (e) {
-                          if (!context.mounted) return;
-                          ToastService.error(
-                            context,
-                            theme,
-                            message: e.toString(),
-                            title: 'Error updating list',
-                          );
-                        }
-                      },
-                      nestList: list,
-                    );
+                    return AddNestListDialog(nestList: list);
                   },
                 );
+                if (result != null) {
+                  try {
+                    await listController.updateList(result);
+                  } catch (e) {
+                    if (!context.mounted) return;
+                    ToastService.error(
+                      context,
+                      theme,
+                      message: e.toString(),
+                      title: 'Error updating list',
+                    );
+                  }
+                }
               },
               text: 'Edit',
               backC: theme.secBackC,

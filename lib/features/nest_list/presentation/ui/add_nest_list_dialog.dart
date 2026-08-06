@@ -7,8 +7,8 @@ import 'package:movie_nest/features/nest_list/data/models/nest_list.dart';
 import 'package:movie_nest/features/nest_list/data/models/nest_list_dto.dart';
 
 class AddNestListDialog extends ConsumerStatefulWidget {
-  const AddNestListDialog({super.key, required this.onCreated, this.nestList});
-  final Future<void> Function(NestListDto) onCreated;
+  const AddNestListDialog({super.key, this.nestList});
+  // final Future<void> Function(NestListDto) onCreated;
   final NestList? nestList;
 
   @override
@@ -80,11 +80,9 @@ class _AddNestListDialogState extends ConsumerState<AddNestListDialog> {
             setState(() {
               _error = dto.validate(_isEdit);
             });
-            if (_error == null) {
-              await widget.onCreated(dto);
-              if (context.mounted) {
-                Navigator.of(context).pop();
-              }
+            if (_error == null && context.mounted) {
+              // await widget.onCreated(dto);
+              Navigator.of(context).pop(dto);
             }
           },
           text: _isEdit ? 'Update List' : 'Create List',
