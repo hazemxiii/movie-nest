@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io' as io;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:movie_nest/core/exceptions/nest_secret_exception.dart';
 import 'package:movie_nest/core/services/database_services/migrations/add_next_last_air_dates.dart';
@@ -28,6 +29,9 @@ class SqliteService {
   List<Migration> get migrations => [AddNextLastAirDates()];
 
   Future<void> init() async {
+    if (kIsWeb) {
+      return;
+    }
     final databaseFactory = databaseFactoryFfi;
     final io.Directory appDocumentsDir =
         await getApplicationDocumentsDirectory();

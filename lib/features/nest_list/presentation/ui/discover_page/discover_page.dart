@@ -33,6 +33,14 @@ class DiscoverPage extends ConsumerWidget {
             id: 'trending',
             description: 'Movies/Shows that are trending Now',
           ),
+          const PublicNestListLoader(
+            id: 'popular-movies',
+            description: 'Popular Movies',
+          ),
+          const PublicNestListLoader(
+            id: 'airing',
+            description: 'TV Series On Air',
+          ),
         ],
       ),
     );

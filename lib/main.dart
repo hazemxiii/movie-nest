@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +14,9 @@ import 'package:movie_nest/features/nest_list/presentation/ui/discover_page/disc
 import 'package:movie_nest/features/nest_list/presentation/ui/list_page/list_page.dart';
 import 'package:movie_nest/features/nest_list/presentation/ui/private_list_collection_page/private_list_collection_page.dart';
 import 'package:movie_nest/features/nest_list/presentation/viewmodels/private_nest_list_collection_viewmodel.dart';
+import 'package:movie_nest/features/nest_user/presentation/ui/user_button.dart';
 import 'package:movie_nest/features/sync/presentation/ui/sync_indicator_button.dart';
+import 'package:movie_nest/firebase_options.dart';
 
 void main() {
   runApp(const ProviderScope(child: Bootstrap()));
@@ -29,12 +32,13 @@ class Bootstrap extends ConsumerStatefulWidget {
 class _BootstrapState extends ConsumerState<Bootstrap> {
   bool _isLoaded = false;
   Future<void> _loadApp() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     await ref.watch(themeProvider.future);
     await ref.read(sqliteServiceProvider).init();
     final theme = ref.watch(themeProvider).value!;
     router = GoRouter(
-      // TODO remove this later
-      initialLocation: 'media/b8c228c7-0e8b-4c55-8490-68e8ed91b883',
       routes: [
         ShellRoute(
           builder: (context, state, child) {
@@ -44,6 +48,9 @@ class _BootstrapState extends ConsumerState<Bootstrap> {
                 backgroundColor: theme.backC,
                 actions: [
                   const SyncIndicatorButton(),
+                  const SizedBox(width: 5),
+                  const UserButton(),
+                  const SizedBox(width: 5),
                   TextButton(
                     style: TextButton.styleFrom(foregroundColor: theme.mainC),
                     onPressed: () {
@@ -55,6 +62,7 @@ class _BootstrapState extends ConsumerState<Bootstrap> {
                     },
                     child: Text(state.fullPath == '/lists' ? 'Home' : 'Lists'),
                   ),
+                  const SizedBox(width: 5),
                   Container(
                     margin: const EdgeInsets.only(right: 16),
                     child: NestButton(

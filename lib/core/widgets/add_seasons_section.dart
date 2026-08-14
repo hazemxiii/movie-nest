@@ -64,13 +64,14 @@ class _AddSeasonsSectionState extends ConsumerState<AddSeasonsSection> {
     super.dispose();
   }
 
+  bool get _isSmallScreen => MediaQuery.of(context).size.width < 600;
+
   @override
   Widget build(BuildContext context) {
-    final isSmallScreen = MediaQuery.of(context).size.width < 600;
     final theme = ref.watch(themeProvider).value!;
     return Container(
       margin: const EdgeInsets.only(top: 10),
-      padding: EdgeInsets.all(isSmallScreen ? 10 : 20),
+      padding: EdgeInsets.all(_isSmallScreen ? 10 : 20),
       decoration: BoxDecoration(
         color: theme.backC,
         border: Border.all(color: theme.borderC),
@@ -80,13 +81,13 @@ class _AddSeasonsSectionState extends ConsumerState<AddSeasonsSection> {
         children: [
           Flex(
             spacing: 5,
-            crossAxisAlignment: isSmallScreen
+            crossAxisAlignment: _isSmallScreen
                 ? CrossAxisAlignment.start
                 : CrossAxisAlignment.center,
-            direction: isSmallScreen ? Axis.vertical : Axis.horizontal,
+            direction: _isSmallScreen ? Axis.vertical : Axis.horizontal,
             children: [
               Expanded(
-                flex: isSmallScreen ? 0 : 1,
+                flex: _isSmallScreen ? 0 : 1,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -109,7 +110,7 @@ class _AddSeasonsSectionState extends ConsumerState<AddSeasonsSection> {
                 ),
               ),
               Column(
-                crossAxisAlignment: isSmallScreen
+                crossAxisAlignment: _isSmallScreen
                     ? CrossAxisAlignment.start
                     : CrossAxisAlignment.end,
                 spacing: 5,
@@ -119,6 +120,7 @@ class _AddSeasonsSectionState extends ConsumerState<AddSeasonsSection> {
                       _dtos.add(
                         SeasonDto(
                           number: ++seasonCountWithoutSpecial,
+                          media: widget.mediaId,
                           episodeCount: 1,
                           fieldsVersion: {},
                         ),
@@ -165,6 +167,7 @@ class _AddSeasonsSectionState extends ConsumerState<AddSeasonsSection> {
               ),
             ],
           ),
+          const SizedBox(height: 12),
           ..._dtos.map(_seasonEditWidget),
         ],
       ),
@@ -174,53 +177,34 @@ class _AddSeasonsSectionState extends ConsumerState<AddSeasonsSection> {
   Widget _seasonEditWidget(SeasonDto dto) {
     final theme = ref.watch(themeProvider).value!;
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: _isSmallScreen
+          ? const EdgeInsets.all(5)
+          : const EdgeInsets.all(10),
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: theme.secBackC,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(_isSmallScreen ? 6 : 999),
       ),
-      child: Row(
+      child: Flex(
+        direction: _isSmallScreen ? Axis.vertical : Axis.horizontal,
         children: [
-          Text('Season ${dto.number}'.toUpperCase(), style: theme.secSmallBold),
-          IconButton(
-            padding: EdgeInsets.zero,
-            onPressed: () {
-              // TODO shorten
-              _dtos.remove(dto);
-              if (dto.number == 0) {
-                specialEpisodes = 0;
-              } else {
-                episodeCountWithoutSpecial -=
-                    dto.episodeCount ??
-                    _seasonByNumber[dto.number]?.episodeCount ??
-                    0;
-                seasonCountWithoutSpecial--;
-                for (var i = 0; i < _dtos.length; i++) {
-                  if (_dtos[i].number > dto.number) {
-                    if (_seasonByNumber.containsKey(_dtos[i].number)) {
-                      _dtos[i].number--;
-                      _seasonByNumber[_dtos[i].number] =
-                          _seasonByNumber[_dtos[i].number + 1]!.copyWithDto(
-                            _dtos[i],
-                          );
-                      _dtos[i] = _seasonByNumber[_dtos[i].number]!.toDto();
-                      _controllerByNumber[_dtos[i].number] =
-                          TextEditingController(
-                            text: _dtos[i].episodeCount.toString(),
-                          );
-                    } else {
-                      _dtos[i].number--;
-                    }
-                  }
-                }
-              }
-              widget.onSeasonsChanged(_dtos);
-              setState(() {});
-            },
-            icon: Icon(Icons.close, color: theme.errorC),
+          Row(
+            children: [
+              Text(
+                'Season ${dto.number}'.toUpperCase(),
+                style: theme.secSmallBold,
+              ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  removeSeason(dto);
+                },
+                icon: Icon(Icons.close, color: theme.errorC),
+              ),
+            ],
           ),
           Expanded(
+            flex: _isSmallScreen ? 0 : 1,
             child: NestInput(
               showNumberButtons: true,
               label: 'Episodes',
@@ -247,5 +231,33 @@ class _AddSeasonsSectionState extends ConsumerState<AddSeasonsSection> {
         ],
       ),
     );
+  }
+
+  void removeSeason(SeasonDto dto) {
+    _dtos.remove(dto);
+    if (dto.number == 0) {
+      specialEpisodes = 0;
+    } else {
+      episodeCountWithoutSpecial -=
+          dto.episodeCount ?? _seasonByNumber[dto.number]?.episodeCount ?? 0;
+      seasonCountWithoutSpecial--;
+      for (var i = 0; i < _dtos.length; i++) {
+        if (_dtos[i].number > dto.number) {
+          if (_seasonByNumber.containsKey(_dtos[i].number)) {
+            _dtos[i].number--;
+            _seasonByNumber[_dtos[i].number] =
+                _seasonByNumber[_dtos[i].number + 1]!.copyWithDto(_dtos[i]);
+            _dtos[i] = _seasonByNumber[_dtos[i].number]!.toDto();
+            _controllerByNumber[_dtos[i].number] = TextEditingController(
+              text: _dtos[i].episodeCount.toString(),
+            );
+          } else {
+            _dtos[i].number--;
+          }
+        }
+      }
+    }
+    widget.onSeasonsChanged(_dtos);
+    setState(() {});
   }
 }

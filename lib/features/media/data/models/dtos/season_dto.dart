@@ -18,7 +18,7 @@ class SeasonDto {
       'description': ?description,
       'poster_url': ?posterUrl,
       'media': ?media,
-      'fieldsVersion': {},
+      'fieldsVersion': fieldsVersion,
       'watched_episodes': ?watchedEpisodes,
     };
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:movie_nest/core/exceptions/nest_internet_exception.dart';
 import 'package:movie_nest/core/models/watch_stream_data.dart';
 import 'package:movie_nest/features/media/data/datasources/media_datasource.dart';
@@ -30,6 +31,10 @@ class MediaRepositoryImpl implements MediaRepository {
     for (final season in dto.seasonsDto) {
       season.media = dto.id;
     }
+    if (kIsWeb) {
+      await _remoteDatasource.createMedia(dto);
+      return;
+    }
     await _localDatasource.createMedia(dto);
     try {
       await _remoteDatasource.createMedia(dto);
@@ -53,6 +58,11 @@ class MediaRepositoryImpl implements MediaRepository {
 
   @override
   Stream<WatchStreamData<Media>> watchPrivateMedia(String mediaId) async* {
+    if (kIsWeb) {
+      final remoteMedia = await _remoteDatasource.getPrivateMedia(mediaId);
+      yield WatchStreamData(data: remoteMedia, isLoading: false);
+      return;
+    }
     final localMedia = await _localDatasource.getPrivateMedia(mediaId);
     final willFetchRemote = !(await _syncQueueDatasource.hasOperations());
     yield WatchStreamData(data: localMedia, isLoading: willFetchRemote);
@@ -73,6 +83,14 @@ class MediaRepositoryImpl implements MediaRepository {
     List<int> added,
     List<int> removed,
   ) async {
+    if (kIsWeb) {
+      return await _remoteDatasource.toggleEpisode(
+        mediaId,
+        seasonNumber,
+        added,
+        removed,
+      );
+    }
     final localSeason = await _localDatasource.toggleEpisode(
       mediaId,
       seasonNumber,
@@ -107,10 +125,17 @@ class MediaRepositoryImpl implements MediaRepository {
 
   @override
   Future<void> deleteMedia(String mediaId) async {
+    if (kIsWeb) {
+      await _remoteDatasource.delete(mediaId);
+      return;
+    }
     await _localDatasource.delete(mediaId);
     try {
       await _remoteDatasource.delete(mediaId);
     } on NestInternetException {
+      if (kIsWeb) {
+        rethrow;
+      }
       _syncQueueDatasource.addOperation(
         SyncOperation(
           id: const Uuid().v4(),
@@ -130,6 +155,9 @@ class MediaRepositoryImpl implements MediaRepository {
 
   @override
   Future<Media> updateMedia(MediaDto dto) async {
+    if (kIsWeb) {
+      return await _remoteDatasource.update(dto);
+    }
     final localMedia = await _localDatasource.update(dto);
     try {
       return await _remoteDatasource.update(dto);

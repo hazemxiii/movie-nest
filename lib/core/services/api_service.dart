@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:movie_nest/core/exceptions/nest_exception.dart';
@@ -14,8 +15,9 @@ const fakeToken =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNjA1Y2FmYTczZjQ0N2JjNDAwNmE0YiIsImVtYWlsIjoidXNlcjFAZW1haWwuY29tIiwiaWF0IjoxNzg0NzAwNDY4LCJleHAiOjE3ODk4ODQ0Njh9.tCErkXQWZ_q4sNZhrMCbfCyrhFyrz8C2EuKG15BA3f4';
 
 class ApiService {
-  // final _baseUrl = 'https://movie-nest-api.vercel.app';
-  final _baseUrl = 'http://localhost:3000';
+  final _baseUrl = kDebugMode
+      ? 'http://localhost:3000'
+      : 'https://movie-nest-api.vercel.app';
 
   Future<Map<String, dynamic>> fetch(
     String endpoint,

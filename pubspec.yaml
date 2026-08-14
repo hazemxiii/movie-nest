@@ -48,6 +48,10 @@ dependencies:
   path: ^1.9.1
   uuid: ^4.6.0
   toastification: ^3.2.0
+  icons_launcher: ^3.1.0
+  firebase_core: ^4.13.0
+  firebase_auth: ^6.5.7
+  google_sign_in: ^7.2.0
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +68,13 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+icons_launcher:
+  image_path: "assets/images/logo.jpg"
+  platforms:
+    android:
+      enable: true
+    ios:
+      enable: true
 flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

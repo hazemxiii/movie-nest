@@ -1,10 +1,8 @@
-import 'dart:io';
 import 'dart:ui';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:movie_nest/core/services/nest_platform.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
 import 'package:movie_nest/core/widgets/nest_button.dart';
 import 'package:movie_nest/core/widgets/nest_image.dart';
@@ -56,13 +54,11 @@ class _MediaWidgetState extends ConsumerState<MediaWidget>
         goToDetails(widget.media.tmdbId, widget.media.type == 'tv');
       },
       onHover: (hovered) {
-        if (!kIsWeb) {
-          if (!Platform.isAndroid && !Platform.isIOS) {
-            if (hovered) {
-              _animationController.forward();
-            } else {
-              _animationController.reverse();
-            }
+        if (!NestPlatform.isMobile) {
+          if (hovered) {
+            _animationController.forward();
+          } else {
+            _animationController.reverse();
           }
         }
       },
@@ -133,7 +129,9 @@ class _MediaWidgetState extends ConsumerState<MediaWidget>
                 Row(
                   children: [
                     Text(
-                      widget.media.rating.toString().substring(0, 3),
+                      widget.media.rating.toString().length > 3
+                          ? widget.media.rating.toString().substring(0, 3)
+                          : widget.media.rating.toString(),
                       style: theme.sec,
                     ),
                     const SizedBox(width: 4),

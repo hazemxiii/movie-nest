@@ -5,7 +5,7 @@ import 'package:movie_nest/features/media/data/models/dtos/season_dto.dart';
 import 'package:movie_nest/features/media/data/models/season.dart';
 
 class Media {
-  const Media({
+  Media({
     required this.id,
     required this.list,
     required this.tmdbId,
@@ -28,7 +28,9 @@ class Media {
     required this.seasons,
     this.lastAirDate,
     this.nextAirDate,
-  });
+  }) {
+    seasons.sort((a, b) => a.number.compareTo(b.number));
+  }
 
   factory Media.empty() {
     return Media(
@@ -67,7 +69,9 @@ class Media {
             ? DateTime.parse(json['next_air_date'] as String)
             : null,
         type: json['type'] as String,
-        date: DateTime.parse(json['date'] as String),
+        date: DateTime.parse(
+          json['date'] ?? DateTime(1970, 1, 1).toIso8601String(),
+        ),
         end: json['end'] != null ? DateTime.parse(json['end'] as String) : null,
         rating: double.tryParse(json['rating']?.toString() ?? '0') ?? 0.0,
         runTime: json['run_time'] as int,
@@ -206,9 +210,9 @@ class Media {
       posterUrl: dto.posterUrl ?? posterUrl,
       type: dto.type ?? type,
       date: dto.date ?? date,
-      end: dto.end ?? end,
-      lastAirDate: dto.lastAirDate ?? lastAirDate,
-      nextAirDate: dto.nextAirDate ?? nextAirDate,
+      end: dto.end.isSet ? dto.end.value : end,
+      lastAirDate: dto.lastAirDate.isSet ? dto.lastAirDate.value : lastAirDate,
+      nextAirDate: dto.nextAirDate.isSet ? dto.nextAirDate.value : nextAirDate,
       rating: dto.rating ?? rating,
       runTime: dto.runTime ?? runTime,
       genres: dto.genres ?? genres,

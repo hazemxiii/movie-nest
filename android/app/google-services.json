@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "700191840421",
+    "project_id": "xiii-79931",
+    "storage_bucket": "xiii-79931.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700191840421:android:73d6f6b52f2881f988154c",
+        "android_client_info": {
+          "package_name": "com.example.movie_nest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "700191840421-am164shmdt2iru41sps4m9jnijgfliad.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1zM9tYhpF5C0XSFKesXx0SS8ppbqfzUw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "700191840421-am164shmdt2iru41sps4m9jnijgfliad.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

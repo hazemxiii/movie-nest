@@ -5,7 +5,8 @@ import 'package:movie_nest/core/widgets/nest_error_widget.dart';
 import 'package:movie_nest/features/nest_list/presentation/viewmodels/private_nest_list_collection_viewmodel.dart';
 
 class SelectListDialog extends ConsumerWidget {
-  const SelectListDialog({super.key});
+  const SelectListDialog({super.key, this.excludedLists = const []});
+  final List<String> excludedLists;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,17 +32,20 @@ class SelectListDialog extends ConsumerWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
-                children: data.data!.map((l) {
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context, l.id);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(l.name, style: theme.normal),
-                    ),
-                  );
-                }).toList(),
+                children: data.data!
+                    .where((l) => !excludedLists.contains(l.id))
+                    .map((l) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context, l.id);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(l.name, style: theme.normal),
+                        ),
+                      );
+                    })
+                    .toList(),
               );
             },
             error: (Object error, StackTrace stackTrace) {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:movie_nest/core/exceptions/nest_internet_exception.dart';
 import 'package:movie_nest/core/services/api_service.dart';
 import 'package:movie_nest/core/services/nest_logger.dart';
@@ -18,6 +19,9 @@ class SyncRepositoryImpl implements SyncRepository {
 
   @override
   Future<void> sync() async {
+    if (kIsWeb) {
+      return;
+    }
     final operations = await _syncQueueDatasource.getOperations();
     for (final operation in operations) {
       try {

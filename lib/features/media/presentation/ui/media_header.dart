@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:movie_nest/core/exceptions/nest_exception.dart';
 import 'package:movie_nest/core/models/watch_stream_data.dart';
 import 'package:movie_nest/core/services/toast_service.dart';
 import 'package:movie_nest/core/theme/nest_theme.dart';
@@ -13,10 +14,12 @@ import 'package:movie_nest/core/widgets/nest_error_widget.dart';
 import 'package:movie_nest/core/widgets/nest_image.dart';
 import 'package:movie_nest/core/widgets/tag_widget.dart';
 import 'package:movie_nest/features/media/data/models/dtos/media_dto.dart';
+import 'package:movie_nest/features/media/data/models/dtos/season_dto.dart';
 import 'package:movie_nest/features/media/data/models/media.dart';
 import 'package:movie_nest/features/media/presentation/ui/add_media_dialog.dart';
 import 'package:movie_nest/features/media/presentation/ui/media_page_shimmer.dart';
 import 'package:movie_nest/features/media/presentation/ui/select_list_dialog.dart';
+import 'package:movie_nest/features/media/presentation/ui/sync_media_dialog.dart';
 import 'package:movie_nest/features/media/presentation/viewmodels/private_media_viewmodel.dart';
 import 'package:movie_nest/features/media/presentation/viewmodels/public_media_viewmodel.dart';
 import 'package:movie_nest/features/nest_list/presentation/viewmodels/private_nest_list_viewmodel.dart';
@@ -34,6 +37,7 @@ class MediaHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loadingLatest = ValueNotifier<bool>(false);
     final mediaState = isPublic
         ? ref.watch(publicMediaProvider((mediaId, isTv)))
         : ref.watch(privateMediaViewmodelProvider(mediaId));
@@ -227,12 +231,118 @@ class MediaHeader extends ConsumerWidget {
                                 ),
                                 NestButton(
                                   onTap: () async {
+                                    final listId = await showDialog<String>(
+                                      context: context,
+                                      builder: (context) {
+                                        return SelectListDialog(
+                                          excludedLists: [media!.list],
+                                        );
+                                      },
+                                    );
+                                    try {
+                                      await ref
+                                          .read(
+                                            privateMediaViewmodelProvider(
+                                              media!.id,
+                                            ).notifier,
+                                          )
+                                          .updateMedia(
+                                            MediaDto(
+                                              id: media.id,
+                                              list: listId,
+                                              seasonsDto: media.seasons
+                                                  .map(
+                                                    (e) => SeasonDto(
+                                                      number: e.number,
+                                                      fieldsVersion:
+                                                          e.fieldsVersion ?? {},
+                                                    ),
+                                                  )
+                                                  .toList(),
+                                              fieldsVersion:
+                                                  media.fieldsVersion ?? {},
+                                            ),
+                                          );
+                                    } catch (e) {
+                                      if (!context.mounted) return;
+                                      ToastService.error(
+                                        context,
+                                        theme,
+                                        message:
+                                            'Moving ${media!.title} Failed',
+                                        title: 'Failed',
+                                      );
+                                    }
+                                  },
+                                  backC: theme.mainC,
+                                  textC: theme.textC,
+                                  icon: Icons.move_to_inbox,
+                                  text: 'Move to List',
+                                ),
+                                NestButton(
+                                  onTap: () async {
                                     await edit(context, ref, media!);
                                   },
                                   backC: theme.mainC.withValues(alpha: 0.4),
                                   textC: theme.textC,
                                   borderC: theme.mainC,
                                   text: 'Edit',
+                                ),
+                                ValueListenableBuilder(
+                                  valueListenable: loadingLatest,
+                                  builder: (context, value, child) {
+                                    return NestButton(
+                                      onTap: () async {
+                                        if (value) return;
+                                        loadingLatest.value = true;
+                                        try {
+                                          final fromServer = await ref.watch(
+                                            publicMediaProvider((
+                                              media!.tmdbId,
+                                              media.isTv,
+                                            )).future,
+                                          );
+                                          if (fromServer == null) {
+                                            throw NestException('Error');
+                                          }
+                                          if (!context.mounted) return;
+                                          final dto =
+                                              await showDialog<MediaDto>(
+                                                context: context,
+                                                builder: (context) =>
+                                                    SyncMediaDialog(
+                                                      original: media!,
+                                                      fromServer: fromServer,
+                                                    ),
+                                              );
+                                          if (dto != null) {
+                                            await ref
+                                                .read(
+                                                  privateMediaViewmodelProvider(
+                                                    media.id,
+                                                  ).notifier,
+                                                )
+                                                .updateMedia(dto);
+                                          }
+                                        } catch (e) {
+                                          if (!context.mounted) return;
+                                          ToastService.error(
+                                            context,
+                                            theme,
+                                            message:
+                                                'Couldn\'t get latest data',
+                                            title: 'Error',
+                                          );
+                                        } finally {
+                                          loadingLatest.value = false;
+                                        }
+                                      },
+                                      backC: theme.mainC.withValues(alpha: 0.4),
+                                      textC: theme.textC,
+                                      borderC: theme.mainC,
+                                      text: value ? 'Syncing...' : 'Sync',
+                                    );
+                                  },
                                 ),
                               ],
                             ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:movie_nest/core/exceptions/nest_internet_exception.dart';
 import 'package:movie_nest/core/models/watch_stream_data.dart';
 import 'package:movie_nest/features/media/data/datasources/media_datasource.dart';
@@ -35,10 +36,15 @@ class NestListRepositoryImpl extends NestListRepository {
 
   @override
   Future<void> createList(NestListDto list) async {
-    await _localNestListDatasource.create(list);
+    if (!kIsWeb) {
+      await _localNestListDatasource.create(list);
+    }
     try {
       await _remoteNestListDatasource.create(list);
     } on NestInternetException {
+      if (kIsWeb) {
+        rethrow;
+      }
       await _syncQueueDatasource.addOperation(
         SyncOperation(
           id: const Uuid().v4(),
@@ -60,6 +66,12 @@ class NestListRepositoryImpl extends NestListRepository {
   @override
   Stream<WatchStreamData<List<NestList>>>
   watchPrivateListCollectionSummary() async* {
+    if (kIsWeb) {
+      final remoteLists = await _remoteNestListDatasource
+          .getPrivateListCollectionSummary();
+      yield WatchStreamData(data: remoteLists, isLoading: false);
+      return;
+    }
     List<NestList> localLists = [];
     final localIds = <String>{};
     final hasOperations = await _syncQueueDatasource.hasOperations();
@@ -100,7 +112,9 @@ class NestListRepositoryImpl extends NestListRepository {
 
   @override
   Future<void> deleteList(String listId, {String? moveToListId}) async {
-    await _localNestListDatasource.delete(listId, moveToListId: moveToListId);
+    if (!kIsWeb) {
+      await _localNestListDatasource.delete(listId, moveToListId: moveToListId);
+    }
     try {
       await _remoteNestListDatasource.delete(
         listId,
@@ -125,6 +139,9 @@ class NestListRepositoryImpl extends NestListRepository {
 
   @override
   Future<NestList> updateList(String listId, NestListDto list) async {
+    if (kIsWeb) {
+      return await _remoteNestListDatasource.update(listId, list);
+    }
     final oldLocalList = await _localNestListDatasource.getPrivateNestList(
       listId,
     );
@@ -161,6 +178,11 @@ class NestListRepositoryImpl extends NestListRepository {
 
   @override
   Stream<WatchStreamData<NestList>> watchPrivateList(String listId) async* {
+    if (kIsWeb) {
+      final list = await _remoteNestListDatasource.getPrivateNestList(listId);
+      yield WatchStreamData(data: list, isLoading: false);
+      return;
+    }
     NestList? localList;
     String? localError;
     final localmediaIds = <String>{};

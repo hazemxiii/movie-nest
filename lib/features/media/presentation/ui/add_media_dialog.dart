@@ -12,8 +12,13 @@ import 'package:movie_nest/features/media/data/models/media.dart';
 import 'package:uuid/uuid.dart';
 
 class AddMediaDialog extends ConsumerStatefulWidget {
-  const AddMediaDialog({super.key, this.media});
+  const AddMediaDialog({super.key, this.media, this.listId})
+    : assert(
+        media != null || listId != null,
+        'Either media or listId must be provided',
+      );
   final Media? media;
+  final String? listId;
 
   @override
   ConsumerState<AddMediaDialog> createState() => _AddMediaDialogState();
@@ -36,6 +41,9 @@ class _AddMediaDialogState extends ConsumerState<AddMediaDialog> {
   void initState() {
     _dto = MediaDto(
       id: widget.media?.id ?? const Uuid().v4(),
+      status: 'Released',
+      list: widget.listId,
+      type: 'tv',
       seasonsDto: [],
       fieldsVersion: widget.media?.fieldsVersion ?? {},
     );
@@ -144,7 +152,6 @@ class _AddMediaDialogState extends ConsumerState<AddMediaDialog> {
                     );
                   },
                 ),
-                // TODO default value
                 ValueListenableBuilder(
                   valueListenable: _status,
                   builder: (context, value, child) {
@@ -208,21 +215,25 @@ class _AddMediaDialogState extends ConsumerState<AddMediaDialog> {
                   onDateSelected: (date) {
                     _dto.end = date.toUtc();
                   },
-                  value: _dto.end ?? widget.media?.end,
+                  value: _dto.end.isSet ? _dto.end.value : widget.media?.end,
                 ),
                 NestDatePicker(
                   label: 'Previous Episode',
                   onDateSelected: (date) {
                     _dto.lastAirDate = date.toUtc();
                   },
-                  value: _dto.lastAirDate ?? widget.media?.lastAirDate,
+                  value: _dto.lastAirDate.isSet
+                      ? _dto.lastAirDate.value
+                      : widget.media?.lastAirDate,
                 ),
                 NestDatePicker(
                   label: 'Next Episode',
                   onDateSelected: (date) {
                     _dto.nextAirDate = date.toUtc();
                   },
-                  value: _dto.nextAirDate ?? widget.media?.nextAirDate,
+                  value: _dto.nextAirDate.isSet
+                      ? _dto.nextAirDate.value
+                      : widget.media?.nextAirDate,
                 ),
               ]),
             ),
@@ -269,9 +280,6 @@ class _AddMediaDialogState extends ConsumerState<AddMediaDialog> {
                       seasons: widget.media?.seasons ?? [],
                       onSeasonsChanged: (List<SeasonDto> seasons) {
                         _dto.seasonsDto = seasons;
-                        for (var season in seasons) {
-                          print('checking season ${season.number}');
-                        }
                       },
                     );
                   }
