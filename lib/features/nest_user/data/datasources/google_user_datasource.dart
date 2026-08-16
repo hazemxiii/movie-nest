@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:movie_nest/core/exceptions/nest_exception.dart';
 import 'package:movie_nest/core/services/api_service.dart';
 import 'package:movie_nest/core/services/database_services/sqlite_service.dart';
@@ -21,34 +22,24 @@ class GoogleUserDatasource implements UserDataSource {
   @override
   Future<NestUser> login() async {
     try {
+      late final UserCredential userCredentials;
       if (kIsWeb) {
-        final userCredentials = await _signInWithGoogleWeb();
-        final userFromCredentials = userCredentials.user;
-        if (userFromCredentials == null) {
-          throw NestException('Failed to sign in');
-        }
-        final googleUser = GoogleUserModel(
-          id: userFromCredentials.uid,
-          name: userFromCredentials.displayName!,
-          email: userFromCredentials.email!,
-          pictureUrl: userFromCredentials.photoURL,
-        );
-
-        // final serverUser = ServerUserModel(
-        //   id: googleUser.id,
-        //   email: googleUser.email,
-        //   name: null,
-        //   pictureUrl: null,
-        //   googleUser: googleUser,
-        //   listsCount: 3,
-        //   mediaCount: 15,
-        // );
-        final serverUser = await _apiService.fetch('users/me', ApiMethod.get);
-
-        return ServerUserModel.fromJson(serverUser, googleUser).toEntity();
+        userCredentials = await _signInWithGoogleWeb();
+      } else {
+        userCredentials = await _signInWithGoogleMobile();
       }
-      // TODO: Implement mobile sign-in
-      throw Exception();
+      final userFromCredentials = userCredentials.user;
+      if (userFromCredentials == null) {
+        throw NestException('Failed to sign in');
+      }
+      final googleUser = GoogleUserModel(
+        id: userFromCredentials.uid,
+        name: userFromCredentials.displayName!,
+        email: userFromCredentials.email!,
+        pictureUrl: userFromCredentials.photoURL,
+      );
+      final serverUser = await _apiService.fetch('users/me', ApiMethod.get);
+      return ServerUserModel.fromJson(serverUser, googleUser).toEntity();
     } catch (e) {
       throw NestException('Failed to login with Google');
     }
@@ -58,6 +49,22 @@ class GoogleUserDatasource implements UserDataSource {
     final provider = GoogleAuthProvider();
 
     return FirebaseAuth.instance.signInWithPopup(provider);
+  }
+
+  Future<UserCredential> _signInWithGoogleMobile() async {
+    final googleSignIn = GoogleSignIn.instance;
+    await googleSignIn.initialize(
+      clientId:
+          '700191840421-kj31d7fpg10smkpofbpqrpdpjrm3te9n.apps.googleusercontent.com',
+      serverClientId:
+          '700191840421-am164shmdt2iru41sps4m9jnijgfliad.apps.googleusercontent.com',
+    );
+
+    final result = await googleSignIn.authenticate();
+    final credential = GoogleAuthProvider.credential(
+      idToken: result.authentication.idToken,
+    );
+    return FirebaseAuth.instance.signInWithCredential(credential);
   }
 
   @override
