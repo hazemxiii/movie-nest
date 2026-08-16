@@ -28,8 +28,10 @@ class Media {
     required this.seasons,
     this.lastAirDate,
     this.nextAirDate,
+    List<ListsWithThisMedia>? lists,
   }) {
     seasons.sort((a, b) => a.number.compareTo(b.number));
+    this.lists = lists ?? [];
   }
 
   factory Media.empty() {
@@ -87,6 +89,14 @@ class Media {
             : null,
         version: json['version'] ?? 1,
         seasons: [],
+        lists: json['lists'] != null
+            ? (json['lists'] as List<dynamic>)
+                  .map(
+                    (e) =>
+                        ListsWithThisMedia.fromJson(e as Map<String, dynamic>),
+                  )
+                  .toList()
+            : [],
       );
     } catch (e) {
       final error = NestSecretException('0xMD');
@@ -117,6 +127,7 @@ class Media {
   final List<Season> seasons;
   final Map<String, num>? fieldsVersion;
   final int version;
+  late final List<ListsWithThisMedia> lists;
 
   Map<String, dynamic> toJson() {
     return {
@@ -167,6 +178,7 @@ class Media {
     List<Season>? seasons,
     Map<String, num>? fieldsVersion,
     int? version,
+    List<ListsWithThisMedia>? lists,
   }) {
     return Media(
       id: id ?? this.id,
@@ -191,6 +203,7 @@ class Media {
       fieldsVersion: fieldsVersion ?? this.fieldsVersion,
       version: version ?? this.version,
       seasons: seasons ?? this.seasons,
+      lists: lists ?? this.lists,
     );
   }
 
@@ -291,4 +304,16 @@ class MediaProgress {
   final int totalWatched;
 
   double get progress => totalEpisodes > 0 ? totalWatched / totalEpisodes : 0.0;
+}
+
+class ListsWithThisMedia {
+  factory ListsWithThisMedia.fromJson(Map<String, dynamic> json) {
+    return ListsWithThisMedia(
+      id: json['id'] as String,
+      name: json['name'] as String,
+    );
+  }
+  ListsWithThisMedia({required this.id, required this.name});
+  final String id;
+  final String name;
 }

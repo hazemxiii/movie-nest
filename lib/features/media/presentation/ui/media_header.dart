@@ -194,7 +194,21 @@ class MediaHeader extends ConsumerWidget {
                             maxLines: null,
                             // overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 20),
+                          // const SizedBox(height: 20),
+                          if (media.lists.isNotEmpty) ...[
+                            Text('Lists', style: theme.mainBold),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: [
+                                ...media.lists.map(
+                                  (list) =>
+                                      Text(list.name, style: theme.mainBold),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                          ],
                           if (isPublic)
                             NestButton(
                               onTap: () async {
@@ -403,7 +417,9 @@ class MediaHeader extends ConsumerWidget {
   ) async {
     final selectedListId = await showDialog<String>(
       context: context,
-      builder: (context) => const SelectListDialog(),
+      builder: (context) => SelectListDialog(
+        excludedLists: media.lists.map((e) => e.id).toList(),
+      ),
     );
     if (selectedListId == null) return;
     try {
