@@ -6,7 +6,9 @@ import 'package:movie_nest/core/services/nest_platform.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
 import 'package:movie_nest/core/widgets/nest_error_widget.dart';
 import 'package:movie_nest/core/widgets/nest_refresh_button.dart';
+import 'package:movie_nest/core/widgets/sign_in_page.dart';
 import 'package:movie_nest/features/nest_list/presentation/viewmodels/private_nest_list_collection_viewmodel.dart';
+import 'package:movie_nest/features/nest_user/presentation/viewmodels/user_viewmodel.dart';
 
 class PrivateListCollectionPage extends ConsumerWidget {
   const PrivateListCollectionPage({super.key});
@@ -18,6 +20,10 @@ class PrivateListCollectionPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider).value!;
+    final user = ref.watch(userVMPrv).value;
+    if (user == null) {
+      return const SignInPage();
+    }
     final nestListsCollectionState = ref.watch(
       privateNestListCollectionViewmodelProvider,
     );

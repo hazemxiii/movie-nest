@@ -6,6 +6,7 @@ import 'package:movie_nest/features/nest_user/data/repositories/user_repository_
 abstract class UserRepository {
   Future<NestUser> login();
   Future<NestUser?> getUser();
+  Future<void> signOut();
 }
 
 final userRepoPrv = Provider<UserRepository>((ref) {

@@ -8,10 +8,12 @@ class ServerUserModel {
   ) {
     return ServerUserModel(
       id: json['_id'] as String,
-      name: json['name'] ?? 'Unknown User',
+      name: json['name'],
       pictureUrl: json['picture_url'],
       googleUser: googleUser,
       email: json['email'],
+      listsCount: json['lists_count'] ?? 0,
+      mediaCount: json['media_count'] ?? 0,
     );
   }
   ServerUserModel({
@@ -20,6 +22,8 @@ class ServerUserModel {
     required this.name,
     required this.pictureUrl,
     required this._googleUser,
+    required this.listsCount,
+    required this.mediaCount,
   });
 
   final String id;
@@ -27,6 +31,8 @@ class ServerUserModel {
   final String? pictureUrl;
   final GoogleUserModel _googleUser;
   final String email;
+  final int listsCount;
+  final int mediaCount;
 
   NestUser toEntity() {
     return NestUser(
@@ -34,6 +40,8 @@ class ServerUserModel {
       name: name ?? _googleUser.name,
       email: email,
       pictureUrl: pictureUrl ?? _googleUser.pictureUrl,
+      listsCount: listsCount,
+      mediaCount: mediaCount,
     );
   }
 }
