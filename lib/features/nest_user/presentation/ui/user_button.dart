@@ -8,11 +8,17 @@ import 'package:movie_nest/core/widgets/nest_button.dart';
 import 'package:movie_nest/core/widgets/nest_image.dart';
 import 'package:movie_nest/features/nest_user/presentation/viewmodels/user_viewmodel.dart';
 
-class UserButton extends ConsumerWidget {
+class UserButton extends ConsumerStatefulWidget {
   const UserButton({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UserButton> createState() => _UserButtonState();
+}
+
+class _UserButtonState extends ConsumerState<UserButton> {
+  bool _isLoading = false;
+  @override
+  Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider).value!;
     final user = ref.watch(userVMPrv).value;
     final userController = ref.read(userVMPrv.notifier);
@@ -20,6 +26,9 @@ class UserButton extends ConsumerWidget {
       return NestButton(
         onTap: () async {
           try {
+            setState(() {
+              _isLoading = true;
+            });
             await userController.login();
           } catch (e) {
             if (!context.mounted) return;
@@ -29,12 +38,17 @@ class UserButton extends ConsumerWidget {
               message: e.toString(),
               title: 'Sign In Error',
             );
+          } finally {
+            setState(() {
+              _isLoading = false;
+            });
           }
         },
         icon: Icons.person_outline,
         backC: theme.secBackC,
         textC: theme.mainC,
         text: 'Sign In',
+        isLoading: _isLoading,
       );
     }
     return InkWell(
@@ -45,8 +59,8 @@ class UserButton extends ConsumerWidget {
           ? _fallBack(theme, user.name)
           : NestImage(
               url: user.pictureUrl!,
-              height: 40,
-              width: 40,
+              height: 25,
+              width: 25,
               borderRadius: 999,
               fallback: _fallBack(theme, user.name),
             ),
@@ -56,7 +70,7 @@ class UserButton extends ConsumerWidget {
   Widget _fallBack(NestTheme theme, String userName) {
     return CircleAvatar(
       backgroundColor: theme.secBackC,
-      radius: 20,
+      radius: 12.5,
       child: Text(userName[0].toUpperCase(), style: theme.mainBold),
     );
   }

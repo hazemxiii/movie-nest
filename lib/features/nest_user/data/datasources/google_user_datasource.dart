@@ -21,8 +21,9 @@ class GoogleUserDatasource implements UserDataSource {
 
   @override
   Future<NestUser> login() async {
+    late final UserCredential userCredentials;
+    late final GoogleUserModel googleUser;
     try {
-      late final UserCredential userCredentials;
       if (kIsWeb) {
         userCredentials = await _signInWithGoogleWeb();
       } else {
@@ -32,16 +33,30 @@ class GoogleUserDatasource implements UserDataSource {
       if (userFromCredentials == null) {
         throw NestException('Failed to sign in');
       }
-      final googleUser = GoogleUserModel(
+      googleUser = GoogleUserModel(
         id: userFromCredentials.uid,
         name: userFromCredentials.displayName!,
         email: userFromCredentials.email!,
         pictureUrl: userFromCredentials.photoURL,
       );
-      final serverUser = await _apiService.fetch('users/me', ApiMethod.get);
-      return ServerUserModel.fromJson(serverUser, googleUser).toEntity();
     } catch (e) {
+      debugPrint('Google login error: $e');
       throw NestException('Failed to login with Google');
+    }
+    final emptyServerUser = ServerUserModel(
+      id: googleUser.id,
+      email: googleUser.email,
+      name: googleUser.name,
+      pictureUrl: googleUser.pictureUrl,
+      googleUser: googleUser,
+      listsCount: 0,
+      mediaCount: 0,
+    );
+    try {
+      final serverUserJson = await _apiService.fetch('users/me', ApiMethod.get);
+      return ServerUserModel.fromJson(serverUserJson, googleUser).toEntity();
+    } catch (e) {
+      return emptyServerUser.toEntity();
     }
   }
 
@@ -79,9 +94,20 @@ class GoogleUserDatasource implements UserDataSource {
       email: signedInUser.email!,
       pictureUrl: signedInUser.photoURL,
     );
-    final serverUser = await _apiService.fetch('users/me', ApiMethod.get);
-
-    return ServerUserModel.fromJson(serverUser, googleUser).toEntity();
+    try {
+      final serverUser = await _apiService.fetch('users/me', ApiMethod.get);
+      return ServerUserModel.fromJson(serverUser, googleUser).toEntity();
+    } catch (e) {
+      return ServerUserModel(
+        id: googleUser.id,
+        email: googleUser.email,
+        name: googleUser.name,
+        pictureUrl: googleUser.pictureUrl,
+        googleUser: googleUser,
+        listsCount: 0,
+        mediaCount: 0,
+      ).toEntity();
+    }
   }
 
   @override

@@ -14,6 +14,7 @@ class NestButton extends ConsumerStatefulWidget {
     this.radius = 999,
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     this.fontSize = 14,
+    this.isLoading = false,
   });
   final String? text;
   final IconData? icon;
@@ -24,6 +25,7 @@ class NestButton extends ConsumerStatefulWidget {
   final VoidCallback onTap;
   final EdgeInsets padding;
   final double fontSize;
+  final bool isLoading;
 
   @override
   ConsumerState<NestButton> createState() => _NestButtonState();
@@ -32,9 +34,15 @@ class NestButton extends ConsumerStatefulWidget {
 class _NestButtonState extends ConsumerState<NestButton> {
   @override
   Widget build(BuildContext context) {
+    final icon = _getIcon();
+    final text = _getText();
     final theme = ref.watch(themeProvider).value!;
     return InkWell(
-      onTap: widget.onTap,
+      onTap: () {
+        if (!widget.isLoading) {
+          widget.onTap();
+        }
+      },
       borderRadius: BorderRadius.circular(widget.radius),
       child: Container(
         padding: widget.padding,
@@ -46,20 +54,51 @@ class _NestButtonState extends ConsumerState<NestButton> {
         child: Row(
           spacing: 8,
           mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.icon != null)
-              Icon(widget.icon, color: widget.textC ?? theme.backC),
-            if (widget.text != null)
-              Text(
-                widget.text!,
-                style: TextStyle(
-                  color: widget.textC ?? theme.backC,
-                  fontWeight: FontWeight.bold,
-                  fontSize: widget.fontSize,
-                ),
-              ),
-          ],
+          children: [?icon, ?text],
         ),
+      ),
+    );
+  }
+
+  Widget? _getIcon() {
+    final theme = ref.watch(themeProvider).value!;
+    if (widget.icon == null) {
+      return null;
+    }
+    if (widget.isLoading) {
+      return SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: widget.textC ?? theme.backC,
+        ),
+      );
+    }
+    return Icon(widget.icon, color: widget.textC ?? theme.backC);
+  }
+
+  Widget? _getText() {
+    final theme = ref.watch(themeProvider).value!;
+    if (widget.text == null) {
+      return null;
+    }
+    if (widget.isLoading && widget.icon == null) {
+      return SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: widget.textC ?? theme.backC,
+        ),
+      );
+    }
+    return Text(
+      widget.text!,
+      style: TextStyle(
+        color: widget.textC ?? theme.backC,
+        fontWeight: FontWeight.bold,
+        fontSize: widget.fontSize,
       ),
     );
   }

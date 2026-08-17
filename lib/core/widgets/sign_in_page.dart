@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:movie_nest/core/services/toast_service.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
 import 'package:movie_nest/core/widgets/nest_button.dart';
+import 'package:movie_nest/features/nest_user/presentation/viewmodels/user_viewmodel.dart';
 
 class SignInPage extends ConsumerWidget {
   const SignInPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final userController = ref.read(userVMPrv.notifier);
     final theme = ref.watch(themeProvider).value!;
+    final isLoading = ValueNotifier<bool>(false);
     return SingleChildScrollView(
       child: Container(
         width: double.infinity,
@@ -59,14 +64,37 @@ class SignInPage extends ConsumerWidget {
               spacing: 10,
               runSpacing: 10,
               children: [
-                NestButton(
-                  onTap: () {},
-                  text: 'Sign In',
-                  backC: theme.secC,
-                  textC: theme.backC,
+                ValueListenableBuilder(
+                  valueListenable: isLoading,
+                  builder: (context, value, child) {
+                    return NestButton(
+                      onTap: () async {
+                        isLoading.value = true;
+                        try {
+                          await userController.login();
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          ToastService.error(
+                            context,
+                            theme,
+                            message: e.toString(),
+                            title: 'Error',
+                          );
+                        } finally {
+                          isLoading.value = false;
+                        }
+                      },
+                      text: 'Sign In',
+                      backC: theme.secC,
+                      textC: theme.backC,
+                      isLoading: value,
+                    );
+                  },
                 ),
                 NestButton(
-                  onTap: () {},
+                  onTap: () {
+                    context.push('/');
+                  },
                   text: 'Home',
                   borderC: theme.borderC,
                   backC: theme.secBackC,

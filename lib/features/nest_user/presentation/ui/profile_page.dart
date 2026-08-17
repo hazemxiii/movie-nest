@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:movie_nest/core/services/toast_service.dart';
 import 'package:movie_nest/core/theme/nest_theme.dart';
 import 'package:movie_nest/core/theme/theme_notifier.dart';
 import 'package:movie_nest/core/widgets/nest_button.dart';
-import 'package:movie_nest/core/widgets/nest_error_widget.dart';
 import 'package:movie_nest/core/widgets/nest_image.dart';
-import 'package:movie_nest/features/nest_user/presentation/ui/profile_page_shimmer.dart';
+import 'package:movie_nest/core/widgets/sign_in_page.dart';
 import 'package:movie_nest/features/nest_user/presentation/viewmodels/user_viewmodel.dart';
 
 class ProfilePage extends ConsumerWidget {
@@ -18,95 +16,77 @@ class ProfilePage extends ConsumerWidget {
     final isSmall = MediaQuery.of(context).size.width < 700;
     final theme = ref.watch(themeProvider).value!;
     final userController = ref.read(userVMPrv.notifier);
-    final userState = ref.watch(userVMPrv);
-    return userState.when(
-      data: (user) {
-        if (user == null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            context.go('/');
-          });
-          return const SizedBox.shrink();
-        }
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(26),
-                decoration: BoxDecoration(
-                  color: theme.secBackC,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: theme.borderC, width: 1),
-                ),
-                child: Flex(
-                  spacing: 16,
-                  mainAxisAlignment: isSmall
-                      ? MainAxisAlignment.center
-                      : MainAxisAlignment.start,
-                  direction: isSmall ? Axis.vertical : Axis.horizontal,
+    final user = ref.watch(userVMPrv).value;
+    if (user == null) {
+      return const SignInPage();
+    }
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(26),
+            decoration: BoxDecoration(
+              color: theme.secBackC,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: theme.borderC, width: 1),
+            ),
+            child: Flex(
+              spacing: 16,
+              mainAxisAlignment: isSmall
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.start,
+              direction: isSmall ? Axis.vertical : Axis.horizontal,
+              children: [
+                _image(user.pictureUrl, theme, user.name),
+                Column(
+                  crossAxisAlignment: isSmall
+                      ? CrossAxisAlignment.center
+                      : CrossAxisAlignment.start,
                   children: [
-                    _image(user.pictureUrl, theme, user.name),
-                    Column(
-                      crossAxisAlignment: isSmall
-                          ? CrossAxisAlignment.center
-                          : CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user.name,
-                          textAlign: TextAlign.center,
-                          style: theme.largeBold,
-                        ),
-                        Text(user.email, style: theme.sec),
-                      ],
+                    Text(
+                      user.name,
+                      textAlign: TextAlign.center,
+                      style: theme.largeBold,
                     ),
-                    if (!isSmall) const Spacer(),
-                    NestButton(
-                      backC: Colors.transparent,
-                      borderC: theme.errorC,
-                      textC: theme.errorC,
-                      onTap: () async {
-                        try {
-                          await userController.signOut();
-                        } catch (e) {
-                          if (!context.mounted) return;
-                          ToastService.error(
-                            context,
-                            theme,
-                            message: e.toString(),
-                            title: 'Error',
-                          );
-                        }
-                      },
-                      text: 'Sign Out',
-                    ),
+                    Text(user.email, style: theme.sec),
                   ],
                 ),
-              ),
-              const SizedBox(height: 30),
-              Wrap(
-                spacing: 20,
-                runSpacing: 20,
-                children: [
-                  _tag(theme, 'Lists', user.listsCount),
-                  _tag(theme, 'Media', user.mediaCount),
-                ],
-              ),
+                if (!isSmall) const Spacer(),
+                NestButton(
+                  backC: Colors.transparent,
+                  borderC: theme.errorC,
+                  textC: theme.errorC,
+                  onTap: () async {
+                    try {
+                      await userController.signOut();
+                    } catch (e) {
+                      if (!context.mounted) return;
+                      ToastService.error(
+                        context,
+                        theme,
+                        message: e.toString(),
+                        title: 'Error',
+                      );
+                    }
+                  },
+                  text: 'Sign Out',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 30),
+          Wrap(
+            spacing: 20,
+            runSpacing: 20,
+            children: [
+              _tag(theme, 'Lists', user.listsCount),
+              _tag(theme, 'Media', user.mediaCount),
             ],
           ),
-        );
-      },
-      error: (error, stack) {
-        return NestErrorWidget(
-          message: error.toString(),
-          onTap: () {
-            ref.invalidate(userVMPrv);
-          },
-        );
-      },
-      loading: () {
-        return ProfileShimmer(isSmall: isSmall);
-      },
+        ],
+      ),
     );
   }
 
@@ -131,10 +111,11 @@ class ProfilePage extends ConsumerWidget {
 
   Widget _image(String? url, NestTheme theme, String name) {
     const imgSize = 100.0;
+    late final Widget child;
     if (url == null) {
-      return _fallBack(theme, name);
+      child = _fallBack(theme, name);
     } else {
-      return NestImage(
+      child = NestImage(
         url: url,
         height: imgSize,
         width: imgSize,
@@ -142,6 +123,12 @@ class ProfilePage extends ConsumerWidget {
         fallback: _fallBack(theme, name),
       );
     }
+    return InkWell(
+      onTap: () {
+        // TODO feature: Implement image picker
+      },
+      child: child,
+    );
   }
 
   Widget _fallBack(NestTheme theme, String userName) {

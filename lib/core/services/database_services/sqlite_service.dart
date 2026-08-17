@@ -59,10 +59,10 @@ class SqliteService {
   }
 
   Future<void> clearTables() async {
-    await _database.execute('DELETE FROM migrations');
-    await _database.execute('DELETE FROM nest_lists');
-    await _database.execute('DELETE FROM media');
+    await _database.execute('DELETE FROM sync_queue');
     await _database.execute('DELETE FROM seasons');
+    await _database.execute('DELETE FROM media');
+    await _database.execute('DELETE FROM nest_lists');
   }
 
   Future<void> _createTables() async {
