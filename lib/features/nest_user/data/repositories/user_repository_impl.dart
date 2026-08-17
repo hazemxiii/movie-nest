@@ -15,4 +15,9 @@ class UserRepositoryImpl implements UserRepository {
   Future<NestUser?> getUser() async {
     return await _dataSource.getUser();
   }
+
+  @override
+  Future<void> signOut() async {
+    return await _dataSource.signOut();
+  }
 }

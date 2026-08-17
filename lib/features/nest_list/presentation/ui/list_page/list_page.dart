@@ -6,6 +6,7 @@ import 'package:movie_nest/core/widgets/nest_refresh_button.dart';
 import 'package:movie_nest/features/nest_list/presentation/ui/list_page/list_details_section.dart';
 import 'package:movie_nest/features/nest_list/presentation/ui/list_page/private_media_widget.dart';
 import 'package:movie_nest/features/nest_list/presentation/viewmodels/private_nest_list_viewmodel.dart';
+import 'package:movie_nest/features/nest_user/presentation/viewmodels/user_viewmodel.dart';
 
 class ListPage extends ConsumerWidget {
   const ListPage({super.key, required this.listId});
@@ -15,6 +16,10 @@ class ListPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider).value!;
     final listState = ref.watch(privateNestListViewmodelProvider(listId));
+    final user = ref.watch(userVMPrv).value;
+    if (user == null) {
+      return const Center(child: Text('Please sign in to view lists'));
+    }
     return RefreshIndicator(
       onRefresh: () async {
         refreshList(ref);

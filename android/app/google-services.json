@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "700191840421-r7shbbo5qt1s4792f16mg7obtvnpddkl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.movie_nest",
+            "certificate_hash": "3d2679f2b7cf0759aa7ade334d566a2be0bf77bb"
+          }
+        },
+        {
           "client_id": "700191840421-am164shmdt2iru41sps4m9jnijgfliad.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,6 +37,13 @@
             {
               "client_id": "700191840421-am164shmdt2iru41sps4m9jnijgfliad.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "700191840421-kj31d7fpg10smkpofbpqrpdpjrm3te9n.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.movieNest"
+              }
             }
           ]
         }

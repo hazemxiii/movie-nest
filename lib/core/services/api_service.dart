@@ -8,16 +8,21 @@ import 'package:movie_nest/core/exceptions/nest_internet_exception.dart';
 import 'package:movie_nest/core/exceptions/nest_secret_exception.dart';
 import 'package:movie_nest/core/extensions/response_ext.dart';
 import 'package:movie_nest/core/services/nest_logger.dart';
+import 'package:movie_nest/features/nest_user/data/datasources/firebase_token_datasource.dart';
+import 'package:movie_nest/features/nest_user/data/datasources/token_datasource.dart';
 
 enum ApiMethod { get, post, patch, delete }
 
-const fakeToken =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNjA1Y2FmYTczZjQ0N2JjNDAwNmE0YiIsImVtYWlsIjoidXNlcjFAZW1haWwuY29tIiwiaWF0IjoxNzg0NzAwNDY4LCJleHAiOjE3ODk4ODQ0Njh9.tCErkXQWZ_q4sNZhrMCbfCyrhFyrz8C2EuKG15BA3f4';
+// const fakeToken =
+//     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNjA1Y2FmYTczZjQ0N2JjNDAwNmE0YiIsImVtYWlsIjoidXNlcjFAZW1haWwuY29tIiwiaWF0IjoxNzg0NzAwNDY4LCJleHAiOjE3ODk4ODQ0Njh9.tCErkXQWZ_q4sNZhrMCbfCyrhFyrz8C2EuKG15BA3f4';
 
 class ApiService {
+  ApiService(this._tokenDatasource);
   final _baseUrl = kDebugMode
       ? 'http://localhost:3000'
       : 'https://movie-nest-api.vercel.app';
+
+  final TokenDatasource _tokenDatasource;
 
   Future<Map<String, dynamic>> fetch(
     String endpoint,
@@ -28,9 +33,10 @@ class ApiService {
     bool encodeBody = true,
   }) async {
     late final http.Response response;
+    final token = await _tokenDatasource.getToken();
     final baseHeaders = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $fakeToken',
+      if (token != null) 'Authorization': 'Bearer $token',
       ...?headers,
     };
     final url = Uri.parse('$_baseUrl/$endpoint');
@@ -94,5 +100,5 @@ class ApiService {
 }
 
 final apiServiceProvider = Provider<ApiService>((ref) {
-  return ApiService();
+  return ApiService(ref.read(firebaseTokenDePrv));
 });

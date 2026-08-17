@@ -14,6 +14,11 @@ class UserViewModel extends AsyncNotifier<NestUser?> {
     final user = await ref.read(userRepoPrv).login();
     state = AsyncValue.data(user);
   }
+
+  Future<void> signOut() async {
+    await ref.read(userRepoPrv).signOut();
+    state = const AsyncValue.data(null);
+  }
 }
 
 final userVMPrv = AsyncNotifierProvider<UserViewModel, NestUser?>(

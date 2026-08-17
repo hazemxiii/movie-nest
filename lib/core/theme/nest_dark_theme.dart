@@ -7,6 +7,7 @@ class NestDarkTheme extends NestTheme {
         backC: const Color(0xFF0A0A0E),
         textC: const Color(0xFFFAFAFB),
         mainC: mainColor,
+        secC: const Color(0xFF00D9FF),
         secBackC: const Color(0xFF131319),
         inputBackC: const Color(0xFF1F1F25),
         secTextC: const Color(0xFFa4a4ab),
