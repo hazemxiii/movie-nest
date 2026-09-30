@@ -22,6 +22,8 @@ class ApiService {
       ? 'http://localhost:3000'
       : 'https://movie-nest-api.vercel.app';
 
+  // final _baseUrl = 'https://movie-nest-api.vercel.app';
+
   final TokenDatasource _tokenDatasource;
 
   Future<Map<String, dynamic>> fetch(

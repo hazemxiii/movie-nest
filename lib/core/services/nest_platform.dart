@@ -12,4 +12,11 @@ class NestPlatform {
     }
     return false;
   }
+
+  static bool get isWindows {
+    if (kIsWeb) {
+      return false;
+    }
+    return Platform.isWindows;
+  }
 }

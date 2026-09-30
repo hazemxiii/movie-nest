@@ -37,7 +37,10 @@ class SelectListDialog extends ConsumerWidget {
                     .map((l) {
                       return GestureDetector(
                         onTap: () {
-                          Navigator.pop(context, l.id);
+                          Navigator.pop(
+                            context,
+                            SelectListModel(id: l.id, name: l.name),
+                          );
                         },
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -64,4 +67,10 @@ class SelectListDialog extends ConsumerWidget {
       ),
     );
   }
+}
+
+class SelectListModel {
+  SelectListModel({required this.id, required this.name});
+  final String id;
+  final String name;
 }

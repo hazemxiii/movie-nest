@@ -1,3 +1,9 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
+
+import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +15,7 @@ import 'package:movie_nest/features/nest_user/data/datasources/user_data_source.
 import 'package:movie_nest/features/nest_user/data/entities/nest_user.dart';
 import 'package:movie_nest/features/nest_user/data/models/google_user_model.dart';
 import 'package:movie_nest/features/nest_user/data/models/server_user_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GoogleUserDatasource implements UserDataSource {
   GoogleUserDatasource({
@@ -26,6 +33,8 @@ class GoogleUserDatasource implements UserDataSource {
     try {
       if (kIsWeb) {
         userCredentials = await _signInWithGoogleWeb();
+      } else if (Platform.isWindows) {
+        userCredentials = await _signInWithGoogleWindows();
       } else {
         userCredentials = await _signInWithGoogleMobile();
       }
@@ -64,6 +73,110 @@ class GoogleUserDatasource implements UserDataSource {
     final provider = GoogleAuthProvider();
 
     return FirebaseAuth.instance.signInWithPopup(provider);
+  }
+
+  Future<UserCredential> _signInWithGoogleWindows() async {
+    const windowsClientId =
+        '700191840421-jkaj1365vi4cfo6edfce3gkea2garuks.apps.googleusercontent.com';
+    final codeVerifier = _randomString(64);
+    final codeChallenge = base64UrlEncode(
+      sha256.convert(utf8.encode(codeVerifier)).bytes,
+    ).replaceAll('=', '');
+    final state = _randomString(32);
+
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final redirectUri = 'http://127.0.0.1:${server.port}';
+
+    try {
+      final authUri = Uri.https('accounts.google.com', '/o/oauth2/v2/auth', {
+        'client_id': windowsClientId,
+        'redirect_uri': redirectUri,
+        'response_type': 'code',
+        'scope': 'openid email profile',
+        'code_challenge': codeChallenge,
+        'code_challenge_method': 'S256',
+        'state': state,
+      });
+
+      final launched = await launchUrl(
+        authUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        throw NestException('Could not open the browser');
+      }
+
+      final code = await _waitForAuthCode(
+        server,
+        state,
+      ).timeout(const Duration(minutes: 3));
+
+      final tokens = await _apiService.fetch(
+        'users/google/token',
+        ApiMethod.post,
+        requestBody: {
+          'code': code,
+          'code_verifier': codeVerifier,
+          'redirect_uri': redirectUri,
+        },
+      );
+      final credential = GoogleAuthProvider.credential(
+        idToken: tokens['id_token'] as String?,
+        accessToken: tokens['access_token'] as String?,
+      );
+      return await FirebaseAuth.instance.signInWithCredential(credential);
+    } finally {
+      await server.close(force: true);
+    }
+  }
+
+  Future<String> _waitForAuthCode(
+    HttpServer server,
+    String expectedState,
+  ) async {
+    await for (final request in server) {
+      final params = request.uri.queryParameters;
+
+      // Ignore unrelated requests (e.g. /favicon.ico)
+      if (!params.containsKey('code') && !params.containsKey('error')) {
+        request.response.statusCode = HttpStatus.notFound;
+        await request.response.close();
+        continue;
+      }
+
+      final success =
+          params['code'] != null && params['state'] == expectedState;
+
+      request.response
+        ..statusCode = HttpStatus.ok
+        ..headers.contentType = ContentType.html
+        ..write(
+          '<html><body style="font-family:sans-serif;text-align:center;margin-top:20%">'
+          '<h2>${success ? 'Signed in successfully' : 'Sign in failed'}</h2>'
+          '<p>You can close this tab and return to the app.</p>'
+          '</body></html>',
+        );
+      await request.response.close();
+
+      if (params.containsKey('error')) {
+        throw NestException('Google sign-in was cancelled or denied');
+      }
+      if (!success) {
+        throw NestException('Invalid OAuth state');
+      }
+      return params['code']!;
+    }
+    throw NestException('Sign-in server closed unexpectedly');
+  }
+
+  String _randomString(int length) {
+    const chars =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    final random = Random.secure();
+    return List.generate(
+      length,
+      (_) => chars[random.nextInt(chars.length)],
+    ).join();
   }
 
   Future<UserCredential> _signInWithGoogleMobile() async {

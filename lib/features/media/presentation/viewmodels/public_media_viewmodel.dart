@@ -19,6 +19,18 @@ class PublicMediaViewmodel extends AsyncNotifier<Media?> {
       return null;
     }
   }
+
+  Future<void> onListChanged(ListsWithThisMedia list, bool isAdded) async {
+    if (state.value != null) {
+      state = AsyncValue.data(
+        state.value!.copyWith(
+          lists: isAdded
+              ? [...state.value!.lists, list]
+              : state.value!.lists.where((l) => l.id != list.id).toList(),
+        ),
+      );
+    }
+  }
 }
 
 final publicMediaProvider =

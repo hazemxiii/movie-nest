@@ -47,33 +47,39 @@ class PrivateNestListViewmodel
     final oldList = state.value?.data;
     final oldMedia = state.value?.data?.media;
     try {
-      state = AsyncValue.data(
-        WatchStreamData(
-          data: oldList?.copyWith(
-            media: [
-              ...?oldMedia,
-              Media(
-                id: '',
-                list: '',
-                tmdbId: '',
-                title: '',
-                description: '',
-                posterUrl: '',
-                type: '',
-                date: DateTime.now(),
-                runTime: 0,
-                status: '',
-                tag: '',
-                seasons: [],
-              ).copyWithDto(media).copyWith(list: oldList.id),
-            ],
+      if (state.value != null) {
+        state = AsyncValue.data(
+          WatchStreamData(
+            data: oldList?.copyWith(
+              media: [
+                ...?oldMedia,
+                Media(
+                  id: '',
+                  list: '',
+                  tmdbId: '',
+                  title: '',
+                  description: '',
+                  posterUrl: '',
+                  type: '',
+                  date: DateTime.now(),
+                  runTime: 0,
+                  status: '',
+                  tag: '',
+                  seasons: [],
+                ).copyWithDto(media).copyWith(list: oldList.id),
+              ],
+            ),
+            isLoading: false,
           ),
-          isLoading: false,
-        ),
-      );
+        );
+      }
       await ref.read(mediaRepositoryProvider).createMedia(listId, media);
     } catch (e) {
-      state = AsyncValue.data(WatchStreamData(data: oldList, isLoading: false));
+      if (state.value != null) {
+        state = AsyncValue.data(
+          WatchStreamData(data: oldList, isLoading: false),
+        );
+      }
       rethrow;
     }
   }

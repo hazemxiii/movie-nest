@@ -245,14 +245,16 @@ class MediaHeader extends ConsumerWidget {
                                 ),
                                 NestButton(
                                   onTap: () async {
-                                    final listId = await showDialog<String>(
-                                      context: context,
-                                      builder: (context) {
-                                        return SelectListDialog(
-                                          excludedLists: [media!.list],
+                                    final list =
+                                        await showDialog<SelectListModel>(
+                                          context: context,
+                                          builder: (context) {
+                                            return SelectListDialog(
+                                              excludedLists: [media!.list],
+                                            );
+                                          },
                                         );
-                                      },
-                                    );
+                                    if (list == null) return;
                                     try {
                                       await ref
                                           .read(
@@ -263,7 +265,7 @@ class MediaHeader extends ConsumerWidget {
                                           .updateMedia(
                                             MediaDto(
                                               id: media.id,
-                                              list: listId,
+                                              list: list.id,
                                               seasonsDto: media.seasons
                                                   .map(
                                                     (e) => SeasonDto(
@@ -395,6 +397,9 @@ class MediaHeader extends ConsumerWidget {
       await ref
           .read(privateMediaViewmodelProvider(mediaId).notifier)
           .deleteMedia();
+      ref
+          .read(publicMediaProvider((media.tmdbId, isTv)).notifier)
+          .onListChanged(ListsWithThisMedia(id: media.list, name: ''), false);
       if (context.mounted) {
         context.pop();
       }
@@ -415,17 +420,23 @@ class MediaHeader extends ConsumerWidget {
     NestTheme theme,
     Media media,
   ) async {
-    final selectedListId = await showDialog<String>(
+    final selectedList = await showDialog<SelectListModel>(
       context: context,
       builder: (context) => SelectListDialog(
         excludedLists: media.lists.map((e) => e.id).toList(),
       ),
     );
-    if (selectedListId == null) return;
+    if (selectedList == null) return;
     try {
       await ref
-          .read(privateNestListViewmodelProvider(selectedListId).notifier)
+          .read(privateNestListViewmodelProvider(selectedList.id).notifier)
           .addMedia(media.toDto());
+      ref
+          .read(publicMediaProvider((media.tmdbId, isTv)).notifier)
+          .onListChanged(
+            ListsWithThisMedia(id: selectedList.id, name: selectedList.name),
+            true,
+          );
     } catch (e) {
       if (!context.mounted) return;
       ToastService.error(

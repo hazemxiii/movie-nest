@@ -36,9 +36,10 @@ class NestListRepositoryImpl extends NestListRepository {
 
   @override
   Future<void> createList(NestListDto list) async {
-    if (!kIsWeb) {
-      await _localNestListDatasource.create(list);
+    if (kIsWeb) {
+      return await _remoteNestListDatasource.create(list);
     }
+    await _localNestListDatasource.create(list);
     try {
       await _remoteNestListDatasource.create(list);
     } on NestInternetException {
