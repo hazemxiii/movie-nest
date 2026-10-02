@@ -70,6 +70,11 @@ class PrivateMediaWidget extends ConsumerWidget {
                         style: theme.secSmall,
                       ),
                   ],
+                  if (!media.isTv && media.date != null)
+                    Text(
+                      'Released: ${DateFormat('dd-MM-yyyy').format(media.date!)}',
+                      style: theme.secSmall,
+                    ),
                 ],
               ),
             ),

@@ -14,7 +14,7 @@ class Media {
     required this.description,
     required this.posterUrl,
     required this.type,
-    required this.date,
+    this.date,
     this.end,
     this.rating = 0,
     required this.runTime,
@@ -43,7 +43,6 @@ class Media {
       description: '',
       posterUrl: '',
       type: '',
-      date: DateTime.now(),
       rating: 0,
       runTime: 0,
       genres: [],
@@ -71,9 +70,9 @@ class Media {
             ? DateTime.parse(json['next_air_date'] as String)
             : null,
         type: json['type'] as String,
-        date: DateTime.parse(
-          json['date'] ?? DateTime(1970, 1, 1).toIso8601String(),
-        ),
+        date: json['date'] != null
+            ? DateTime.parse(json['date'] as String)
+            : null,
         end: json['end'] != null ? DateTime.parse(json['end'] as String) : null,
         rating: double.tryParse(json['rating']?.toString() ?? '0') ?? 0.0,
         runTime: json['run_time'] as int,
@@ -115,7 +114,7 @@ class Media {
   final String type;
   final DateTime? lastAirDate;
   final DateTime? nextAirDate;
-  final DateTime date;
+  final DateTime? date;
   final DateTime? end;
   final double rating;
   final int runTime;
@@ -139,7 +138,7 @@ class Media {
       'description': description,
       'poster_url': posterUrl,
       'type': type,
-      'date': date.toIso8601String(),
+      'date': date?.toIso8601String(),
       'end': end?.toIso8601String(),
       'last_air_date': lastAirDate?.toIso8601String(),
       'next_air_date': nextAirDate?.toIso8601String(),

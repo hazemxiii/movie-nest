@@ -159,10 +159,11 @@ class MediaHeader extends ConsumerWidget {
                                   ),
                                 ],
                               ),
-                              Text(
-                                "${DateFormat('MMMM dd, yyyy').format(media.date)}${media.end != null ? ' - ${DateFormat('MMMM dd, yyyy').format(media.end!)}' : ''}",
-                                style: theme.sec,
-                              ),
+                              if (media.date != null)
+                                Text(
+                                  "${DateFormat('MMMM dd, yyyy').format(media.date!)}${media.end != null ? ' - ${DateFormat('MMMM dd, yyyy').format(media.end!)}' : ''}",
+                                  style: theme.sec,
+                                ),
                               Text(
                                 "${media.runTime.toString()} min${media.isTv ? '/ep' : ''}",
                                 style: theme.sec,

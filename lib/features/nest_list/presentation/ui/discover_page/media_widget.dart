@@ -125,7 +125,10 @@ class _MediaWidgetState extends ConsumerState<MediaWidget>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(widget.media.date.year.toString(), style: theme.sec),
+                Text(
+                  widget.media.date?.year.toString() ?? 'N/A',
+                  style: theme.sec,
+                ),
                 Row(
                   children: [
                     Text(
