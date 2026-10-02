@@ -14,7 +14,9 @@ class SearchWidget extends ConsumerStatefulWidget {
 }
 
 class _SearchWidgetState extends ConsumerState<SearchWidget> {
+  final _controller = TextEditingController();
   Timer? _debounce;
+  bool isNotEmpty = false;
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider).value!;
@@ -27,11 +29,17 @@ class _SearchWidgetState extends ConsumerState<SearchWidget> {
       borderSide: BorderSide(color: theme.mainC),
     );
     return TextField(
+      controller: _controller,
       onChanged: (value) {
         _debounce?.cancel();
         _debounce = Timer(const Duration(milliseconds: 1000), () {
           widget.queryListener.value = value;
         });
+        if (value.isNotEmpty != isNotEmpty) {
+          setState(() {
+            isNotEmpty = value.isNotEmpty;
+          });
+        }
       },
       cursorColor: theme.textC,
       style: theme.normal,
@@ -45,6 +53,23 @@ class _SearchWidgetState extends ConsumerState<SearchWidget> {
             border: Border.all(color: theme.secTextC, width: 2),
           ),
         ),
+        suffixIcon: isNotEmpty
+            ? Container(
+                margin: const EdgeInsets.only(left: 12, right: 12),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _controller.clear();
+                    widget.queryListener.value = '';
+                    _debounce?.cancel();
+                    setState(() {
+                      isNotEmpty = false;
+                    });
+                  },
+                ),
+              )
+            : null,
         hintText: 'Search movies, series, or anime...',
         border: border,
         enabledBorder: border,

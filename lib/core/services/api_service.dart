@@ -18,11 +18,11 @@ enum ApiMethod { get, post, patch, delete }
 
 class ApiService {
   ApiService(this._tokenDatasource);
-  final _baseUrl = kDebugMode
-      ? 'http://localhost:3000'
-      : 'https://movie-nest-api.vercel.app';
+  // final _baseUrl = kDebugMode
+  //     ? 'http://localhost:3000'
+  //     : 'https://movie-nest-api.vercel.app';
 
-  // final _baseUrl = 'https://movie-nest-api.vercel.app';
+  final _baseUrl = 'https://movie-nest-api.vercel.app';
 
   final TokenDatasource _tokenDatasource;
 
