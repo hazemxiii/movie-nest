@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:movie_nest/core/exceptions/nest_secret_exception.dart';
 import 'package:movie_nest/core/services/database_services/migrations/add_next_last_air_dates.dart';
 import 'package:movie_nest/core/services/database_services/migrations/migration.dart';
+import 'package:movie_nest/core/services/database_services/migrations/remove_non_null_on_media_date.dart';
 import 'package:movie_nest/core/services/nest_logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -26,7 +27,10 @@ class SqliteService {
     'seasons': ['fieldsVersion', 'watched_episodes'],
   };
 
-  List<Migration> get migrations => [AddNextLastAirDates()];
+  List<Migration> get migrations => [
+    AddNextLastAirDates(),
+    RemoveNonNullOnMediaDate(),
+  ];
 
   Future<void> init() async {
     if (kIsWeb) {

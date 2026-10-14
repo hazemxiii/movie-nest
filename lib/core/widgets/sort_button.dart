@@ -41,13 +41,7 @@ class _SortButtonState extends ConsumerState<SortButton> {
           onPressed: widget.onToggleDirection,
         ),
         PopupMenuButton<int>(
-          icon: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(width: 4),
-              Icon(Icons.sort, color: theme.mainC),
-            ],
-          ),
+          icon: Icon(Icons.sort, color: theme.mainC),
           color: theme.secBackC,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

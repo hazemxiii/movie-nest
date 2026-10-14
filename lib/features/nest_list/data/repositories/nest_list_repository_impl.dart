@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:movie_nest/core/exceptions/nest_internet_exception.dart';
 import 'package:movie_nest/core/models/watch_stream_data.dart';
 import 'package:movie_nest/features/media/data/datasources/media_datasource.dart';
+import 'package:movie_nest/features/media/data/models/media.dart';
 import 'package:movie_nest/features/nest_list/data/datasources/nest_list_datasource.dart';
 import 'package:movie_nest/features/nest_list/data/models/nest_list.dart';
 import 'package:movie_nest/features/nest_list/data/models/nest_list_dto.dart';
@@ -187,6 +188,7 @@ class NestListRepositoryImpl extends NestListRepository {
     NestList? localList;
     String? localError;
     final localmediaIds = <String>{};
+    // final localmediaIds = await _localMediaDatasource.idsNamespace();
     try {
       localList = await _localNestListDatasource.getPrivateNestList(listId);
       for (final media in localList.media) {
@@ -209,13 +211,29 @@ class NestListRepositoryImpl extends NestListRepository {
       );
       await _localNestListDatasource.update(listId, remoteList.toDto());
       for (final remoteMedia in remoteList.media) {
-        if (!localmediaIds.contains(remoteMedia.id)) {
+        Media? oldMedia;
+        try {
+          oldMedia = await _localMediaDatasource.getPrivateMedia(
+            remoteMedia.id,
+          );
+        } catch (e) {
+          oldMedia = null;
+        }
+        if (oldMedia == null) {
           await _localMediaDatasource.createMedia(remoteMedia.toDto());
         } else {
           await _localMediaDatasource.update(remoteMedia.toDto());
           localmediaIds.remove(remoteMedia.id);
         }
       }
+      // for (final remoteMedia in remoteList.media) {
+      //   if (!localmediaIds.contains(remoteMedia.id)) {
+      //     await _localMediaDatasource.createMedia(remoteMedia.toDto());
+      //   } else {
+      //     await _localMediaDatasource.update(remoteMedia.toDto());
+      //     localmediaIds.remove(remoteMedia.id);
+      //   }
+      // }
       for (final mediaId in localmediaIds) {
         await _localMediaDatasource.delete(mediaId);
       }

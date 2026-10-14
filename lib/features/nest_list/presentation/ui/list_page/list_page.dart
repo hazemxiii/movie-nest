@@ -10,7 +10,7 @@ import 'package:movie_nest/features/nest_list/presentation/ui/list_page/private_
 import 'package:movie_nest/features/nest_list/presentation/viewmodels/private_nest_list_viewmodel.dart';
 import 'package:movie_nest/features/nest_user/presentation/viewmodels/user_viewmodel.dart';
 
-enum SortType { name, releaseDate, episodeCount, nextAirDate }
+enum SortType { dateAdded, name, releaseDate, episodeCount, nextAirDate }
 
 class ListPage extends ConsumerStatefulWidget {
   const ListPage({super.key, required this.listId});
@@ -27,6 +27,8 @@ class _ListPageState extends ConsumerState<ListPage> {
   List<Media> _sortMedia(List<Media> media) {
     var sorted = List<Media>.from(media);
     switch (_sortType) {
+      case SortType.dateAdded:
+        sorted = [...media];
       case SortType.name:
         sorted.sort(
           (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
@@ -94,6 +96,14 @@ class _ListPageState extends ConsumerState<ListPage> {
                         children: [
                           SortButton(
                             items: [
+                              SortButtonItem(
+                                text: 'Date Added',
+                                onSort: () {
+                                  setState(() {
+                                    _sortType = SortType.dateAdded;
+                                  });
+                                },
+                              ),
                               SortButtonItem(
                                 text: 'Name',
                                 onSort: () {
