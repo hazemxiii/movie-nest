@@ -27,6 +27,7 @@ abstract class NestTheme {
   final Color secBackC2;
 
   TextStyle get bold => TextStyle(fontWeight: FontWeight.bold, color: textC);
+  TextStyle get small => TextStyle(color: textC, fontSize: 12);
   TextStyle get main => TextStyle(color: mainC);
   TextStyle get secCBoldSmall =>
       TextStyle(color: secC, fontWeight: FontWeight.bold, fontSize: 12);
