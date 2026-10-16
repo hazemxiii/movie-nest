@@ -195,21 +195,46 @@ class MediaHeader extends ConsumerWidget {
                             maxLines: null,
                             // overflow: TextOverflow.ellipsis,
                           ),
-                          // const SizedBox(height: 20),
-                          if (media.lists.isNotEmpty) ...[
-                            Text('Lists', style: theme.mainBold),
-                            Wrap(
-                              spacing: 10,
-                              runSpacing: 10,
-                              children: [
-                                ...media.lists.map(
-                                  (list) =>
-                                      Text(list.name, style: theme.mainBold),
-                                ),
-                              ],
+                          const SizedBox(height: 20),
+                          if (media.lists.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: theme.secBackC,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: theme.borderC),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'IN YOUR LISTS',
+                                          style: theme.secSmall,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Wrap(
+                                          spacing: 8,
+                                          runSpacing: 8,
+                                          children: [
+                                            ...media.lists.map(
+                                              (list) => Text(
+                                                list.name,
+                                                style: theme.mainBold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 20),
-                          ],
                           if (isPublic)
                             NestButton(
                               onTap: () async {
