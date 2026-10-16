@@ -24,4 +24,26 @@ class ToastService {
       style: ToastificationStyle.flat,
     );
   }
+
+  static void success(
+    BuildContext context,
+    NestTheme theme, {
+    required String message,
+    required String title,
+  }) {
+    Toastification().show(
+      context: context,
+      title: Text(title),
+      backgroundColor: theme.secBackC,
+      borderSide: BorderSide(color: theme.mainC),
+      foregroundColor: theme.textC,
+      alignment: Alignment.bottomRight,
+      autoCloseDuration: const Duration(milliseconds: 3000),
+      showProgressBar: true,
+      icon: const Icon(Icons.check),
+      description: Text(message),
+      type: ToastificationType.success,
+      style: ToastificationStyle.flat,
+    );
+  }
 }
