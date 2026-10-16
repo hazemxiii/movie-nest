@@ -15,8 +15,7 @@ class SelectListDialog extends ConsumerWidget {
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('Select List'),
-      titleTextStyle: theme.bigBold,
+      title: Text('SELECT LIST', style: theme.bigBold),
       backgroundColor: theme.secBackC,
       content: Container(
         constraints: const BoxConstraints(maxWidth: 400, maxHeight: 600),
@@ -29,26 +28,71 @@ class SelectListDialog extends ConsumerWidget {
                   onTap: () {},
                 );
               }
+              final filteredLists = data.data!
+                  .where((l) => !excludedLists.contains(l.id))
+                  .toList();
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
-                children: data.data!
-                    .where((l) => !excludedLists.contains(l.id))
-                    .map((l) {
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.pop(
-                            context,
-                            SelectListModel(id: l.id, name: l.name),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(l.name, style: theme.normal),
+                children: [
+                  ...filteredLists.asMap().entries.map((entry) {
+                    final l = entry.value;
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.pop(
+                          context,
+                          SelectListModel(id: l.id, name: l.name),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 16,
                         ),
-                      );
-                    })
-                    .toList(),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: theme.borderC,
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(child: Text(l.name, style: theme.normal)),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                  // GestureDetector(
+                  //   onTap: () async {
+                  //     final result = await showDialog<NestListDto>(
+                  //       context: context,
+                  //       builder: (context) => const AddNestListDialog(),
+                  //     );
+                  //     if (result != null && context.mounted) {
+                  //       Navigator.pop(
+                  //         context,
+                  //         SelectListModel(id: '', name: result.name ?? ''),
+                  //       );
+                  //     }
+                  //   },
+                  //   child: Container(
+                  //     padding: const EdgeInsets.symmetric(
+                  //       vertical: 12,
+                  //       horizontal: 16,
+                  //     ),
+                  //     child: Row(
+                  //       children: [
+                  //         Icon(Icons.add, color: theme.mainC, size: 20),
+                  //         const SizedBox(width: 8),
+                  //         Text('Create new list', style: theme.main),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
+                ],
               );
             },
             error: (Object error, StackTrace stackTrace) {
