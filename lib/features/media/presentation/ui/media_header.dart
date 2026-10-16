@@ -463,6 +463,14 @@ class MediaHeader extends ConsumerWidget {
             ListsWithThisMedia(id: selectedList.id, name: selectedList.name),
             true,
           );
+      if (context.mounted) {
+        ToastService.success(
+          context,
+          theme,
+          message: '${media.title} added to ${selectedList.name}',
+          title: 'Success',
+        );
+      }
     } catch (e) {
       if (!context.mounted) return;
       ToastService.error(
