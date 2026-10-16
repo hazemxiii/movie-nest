@@ -96,8 +96,8 @@ class _BootstrapState extends ConsumerState<Bootstrap> {
                   const SyncIndicatorButton(),
                   const SizedBox(width: 5),
                   const UserButton(),
+                  const SizedBox(width: 5),
                   if (!NestPlatform.isMobile) ...[
-                    const SizedBox(width: 5),
                     if (state.fullPath == '/')
                       TextButton(
                         style: TextButton.styleFrom(
